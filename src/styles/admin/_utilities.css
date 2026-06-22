@@ -1,0 +1,283 @@
+.admin-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.admin-header,
+.admin-panel,
+.admin-auth {
+  background: #fff;
+  border: 1px solid #ddd;
+}
+
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+  padding: 24px;
+}
+
+.admin-header h1,
+.admin-panel h1,
+.admin-panel h2,
+.admin-auth h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.admin-eyebrow {
+  margin: 0 0 8px;
+  color: #777;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-panel,
+.admin-auth {
+  padding: 24px;
+}
+
+.admin-auth {
+  max-width: 420px;
+  margin: 12vh auto 0;
+}
+
+.admin-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.admin-table {
+  display: grid;
+  gap: 1px;
+  overflow-x: auto;
+  background: #ddd;
+}
+
+.admin-table-row {
+  display: grid;
+  grid-template-columns: minmax(220px, 2fr) minmax(110px, 1fr) minmax(120px, 1fr) minmax(90px, 0.7fr) minmax(120px, 1fr);
+  gap: 1px;
+  min-width: 780px;
+  background: #ddd;
+}
+
+.admin-table-row > span {
+  min-height: 48px;
+  padding: 12px;
+  background: #fff;
+  font-size: 13px;
+}
+
+.admin-table input,
+.admin-table select {
+  width: 100%;
+  min-height: 40px;
+  padding: 9px 10px;
+  background: #fff;
+  border: 1px solid #ccc;
+  color: #000;
+  font: inherit;
+  font-size: 13px;
+}
+
+.admin-table-head > span {
+  background: #f1f1f1;
+  color: #555;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.admin-stock-input {
+  max-width: 84px;
+}
+
+.admin-order-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.admin-order-card {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid #ddd;
+}
+
+.admin-order-card p {
+  margin: 4px 0 0;
+  color: #666;
+  font-size: 12px;
+}
+
+.admin-order-card span {
+  display: block;
+  margin-bottom: 3px;
+  color: #444;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.admin-order-card code {
+  padding: 6px 8px;
+  background: #f2f2f2;
+  font-size: 12px;
+}
+
+/* admin-app input/label/select — defined in _forms.css */
+
+/* border:0 / cursor:pointer resets — defined per-component in _components.css and _layout.css */
+
+.admin-muted,
+.admin-error,
+.admin-success {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.admin-muted {
+  color: #666;
+}
+
+.admin-error {
+  color: #b00020;
+}
+
+.admin-success {
+  color: #116329;
+}
+
+.admin-skeleton {
+  display: block;
+  background-color: #E5E5E5;
+  animation: adminPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.admin-skeleton-mt {
+  margin-top: 8px;
+}
+
+.admin-skeleton-card {
+  pointer-events: none;
+}
+
+.admin-skeleton-metric {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* admin-order-skeleton — defined in _orders.css */
+
+.admin-side-search svg,
+.admin-global-search svg,
+.admin-rail-button svg,
+.admin-nav button svg,
+.admin-support-link svg,
+.admin-compose svg,
+.admin-feed-thumb svg,
+.admin-attachment-row svg {
+  stroke-width: 1px;
+}
+
+/* Empty States */
+.admin-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+  background: #FAFAF9;
+  border-radius: 12px;
+  border: 1px dashed #D6D3D1;
+  color: #44403C;
+}
+
+.admin-empty-state--compact {
+  padding: 32px 16px;
+}
+
+.admin-empty-state strong {
+  margin-top: 16px;
+  font-size: 16px;
+  color: #1C1917;
+}
+
+.admin-empty-state p {
+  margin: 8px 0 0;
+  font-size: 13px;
+}
+
+.admin-empty-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 24px;
+  min-height: 40px;
+  padding: 0 16px;
+  background: #1C1917;
+  color: #fff;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 13px;
+  transition: opacity 150ms ease;
+}
+
+.admin-empty-action:hover {
+  opacity: 0.9;
+}
+
+/* Refined Hover States for Buttons */
+.admin-detail-card button:hover,
+.admin-pane-header button:hover {
+  background: #e4e4e4;
+}
+
+.admin-detail-card button[type="submit"]:hover,
+.admin-detail-card .admin-link:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+/* Gold CTA Accent */
+.admin-app .admin-form button[type='submit'],
+.admin-compose,
+.admin-empty-action {
+  background: #CA8A04 !important;
+  color: #fff !important;
+  border-color: #A16207 !important;
+}
+
+.admin-app .admin-form button[type='submit']:hover,
+.admin-compose:hover,
+.admin-empty-action:hover {
+  background: #A16207 !important;
+}
+
+/* Better Contrast for Muted Text */
+.admin-muted,
+.admin-user-card span,
+.admin-metric span,
+.admin-feed-main em,
+.admin-order-strip span {
+  color: #555 !important;
+}

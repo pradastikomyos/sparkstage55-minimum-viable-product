@@ -1,0 +1,47 @@
+%% Use Case Diagram Admin - Spark Stage Fashion Commerce
+%% Fokus pada operasional toko, CRUD master data, dan verifikasi BOPIS.
+flowchart LR
+    Admin((Admin)):::actor
+
+    subgraph Sistem["Sistem Informasi Penjualan Pakaian Spark Stage 55"]
+        direction TB
+        
+        UC_Login([Melakukan Login]):::usecase
+        UC_Validasi([Memvalidasi Kredensial]):::usecase
+
+        UC_Produk([Mengelola Data Produk & Kategori]):::usecase
+        UC_TambahP([Menambah Produk/Kategori]):::usecase
+        UC_UbahP([Mengubah Produk/Kategori]):::usecase
+        UC_HapusP([Menghapus/Arsip Produk]):::usecase
+
+        UC_Pesanan([Mengelola Data Pesanan]):::usecase
+        UC_UpdateStatus([Memperbarui Status Pesanan]):::usecase
+
+        UC_BOPIS([Memverifikasi Pengambilan BOPIS]):::usecase
+        UC_Scan([Memindai QR Code Pelanggan]):::usecase
+
+        UC_CMS([Mengelola Konten CMS & Banner]):::usecase
+        
+        UC_Laporan([Melihat Laporan Harian]):::usecase
+        UC_Logout([Melakukan Logout]):::usecase
+    end
+
+    Admin --- UC_Login
+    Admin --- UC_Produk
+    Admin --- UC_Pesanan
+    Admin --- UC_BOPIS
+    Admin --- UC_CMS
+    Admin --- UC_Laporan
+    Admin --- UC_Logout
+
+    UC_Login -. "<<include>>" .-> UC_Validasi
+    UC_BOPIS -. "<<include>>" .-> UC_Scan
+
+    %% Extend: Dari use case tambahan (anak) menunjuk ke induk
+    UC_TambahP -. "<<extend>>" .-> UC_Produk
+    UC_UbahP -. "<<extend>>" .-> UC_Produk
+    UC_HapusP -. "<<extend>>" .-> UC_Produk
+    UC_UpdateStatus -. "<<extend>>" .-> UC_Pesanan
+
+    classDef actor fill:#ffffff,stroke:#000000,stroke-width:1.5px,color:#111111;
+    classDef usecase fill:#ffffff,stroke:#000000,stroke-width:1.5px,color:#111111;

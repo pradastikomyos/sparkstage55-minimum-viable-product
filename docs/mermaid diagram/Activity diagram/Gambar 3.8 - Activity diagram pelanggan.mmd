@@ -1,0 +1,50 @@
+%% Activity Diagram Pelanggan - Spark Stage Fashion Commerce
+flowchart TB
+    subgraph Pelanggan["Aktor: Pelanggan"]
+        direction TB
+        Start((Start)):::startEnd --> Belanja[Pilih Produk & Masuk Keranjang]:::activity
+        Belanja --> Checkout[Klik Checkout Pesanan]:::activity
+        Bayar[Memilih Metode & Membayar di DOKU]:::activity
+        LihatQR[Melihat Bukti & QR Code BOPIS]:::activity
+        Selesai((Finish)):::startEnd
+    end
+
+    subgraph Sistem["Sistem Spark Stage 55"]
+        direction TB
+        ProsesOrder[Validasi Stok & Buat Order/Invoice]:::activity
+        TerimaNotif[Terima Webhook DOKU]:::activity
+        GenQR[Update Status & Generate QR Pickup]:::activity
+    end
+
+    subgraph DOKU["Sistem Eksternal: DOKU Gateway"]
+        direction TB
+        ShowDOKU[Tampilkan Hosted Payment Page]:::activity
+        ProsesBayar[Proses Transaksi Bank/E-Wallet]:::activity
+        CekStatus{Status Bayar?}:::decision
+        KirimSukses[Kirim Webhook Sukses]:::activity
+        KirimGagal[Kirim Webhook Gagal/Expired]:::activity
+        Menunggu[Menunggu Pembayaran / Polling]:::activity
+    end
+
+    %% Alur Lintas Subgraph
+    Checkout --> ProsesOrder
+    ProsesOrder --> ShowDOKU
+    ShowDOKU --> Bayar
+    Bayar --> ProsesBayar
+    ProsesBayar --> CekStatus
+    
+    CekStatus -- Sukses --> KirimSukses
+    KirimSukses --> TerimaNotif
+    TerimaNotif --> GenQR
+    GenQR --> LihatQR
+    LihatQR --> Selesai
+    
+    CekStatus -- Pending --> Menunggu
+    Menunggu --> CekStatus
+    
+    CekStatus -- Gagal/Expired --> KirimGagal
+    KirimGagal --> Selesai
+
+    classDef startEnd fill:#111111,stroke:#111111,color:#ffffff;
+    classDef activity fill:#fffaf0,stroke:#8a6d3b,stroke-width:1.2px,color:#111111;
+    classDef decision fill:#ffffff,stroke:#111111,stroke-width:1.4px,color:#111111;

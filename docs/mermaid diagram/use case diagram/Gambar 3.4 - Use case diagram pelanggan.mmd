@@ -1,0 +1,49 @@
+%% Use Case Diagram Pelanggan - Spark Stage Fashion Commerce
+%% Fokus pada interaksi belanja, checkout, dan pembayaran.
+flowchart LR
+    Pelanggan((Pelanggan)):::actor
+    DOKU((DOKU Payment Gateway)):::external
+
+    subgraph Sistem["Sistem Informasi Penjualan Pakaian Spark Stage 55"]
+        direction TB
+        
+        UC_Reg([Melakukan Registrasi]):::usecase
+        UC_Login([Melakukan Login]):::usecase
+        
+        UC_Katalog([Melihat Katalog Produk]):::usecase
+        
+        UC_Cart([Mengelola Keranjang Belanja]):::usecase
+        UC_AddCart([Menambah Item Produk]):::usecase
+        UC_EditCart([Mengubah/Menghapus Item]):::usecase
+
+        UC_Checkout([Melakukan Checkout Pesanan]):::usecase
+        UC_Payment([Memproses Pembayaran Digital]):::usecase
+
+        UC_History([Melihat Riwayat Pesanan]):::usecase
+        UC_QR([Melihat Kode QR Pickup BOPIS]):::usecase
+
+        UC_Logout([Melakukan Logout]):::usecase
+    end
+
+    Pelanggan --- UC_Reg
+    Pelanggan --- UC_Login
+    Pelanggan --- UC_Katalog
+    Pelanggan --- UC_Cart
+    Pelanggan --- UC_Checkout
+    Pelanggan --- UC_History
+    Pelanggan --- UC_Logout
+
+    DOKU --- UC_Payment
+
+    %% Include: Checkout mewajibkan login dan payment
+    UC_Checkout -. "<<include>>" .-> UC_Login
+    UC_Checkout -. "<<include>>" .-> UC_Payment
+
+    %% Extend: Opsional/Tambahan
+    UC_AddCart -. "<<extend>>" .-> UC_Cart
+    UC_EditCart -. "<<extend>>" .-> UC_Cart
+    UC_QR -. "<<extend>>" .-> UC_History
+
+    classDef actor fill:#ffffff,stroke:#000000,stroke-width:1.5px,color:#111111;
+    classDef external fill:#f6f6f6,stroke:#000000,stroke-width:1.5px,stroke-dasharray:4 3,color:#111111;
+    classDef usecase fill:#ffffff,stroke:#000000,stroke-width:1.5px,color:#111111;

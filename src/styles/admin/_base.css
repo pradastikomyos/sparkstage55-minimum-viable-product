@@ -1,0 +1,63 @@
+/* Admin typography system: Inter UI, Monospace821 BT for codes and counters. */
+.admin-page,
+.admin-app {
+  --admin-sans: 'Inter', 'Segoe UI', Arial, sans-serif;
+  --admin-mono: 'Monospace821 BT', 'Cascadia Mono', 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+  font-family: var(--admin-sans);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.admin-page h1,
+.admin-page h2,
+.admin-app h1,
+.admin-app h2,
+.admin-user-card strong,
+.admin-feed-main strong,
+.admin-metric strong,
+.admin-sidebar-card strong,
+.admin-order-strip strong,
+.admin-rail-logo {
+  font-weight: 600;
+}
+
+.admin-eyebrow,
+.admin-form label,
+.admin-app label,
+.admin-nav p,
+.admin-nav button.is-current,
+.admin-tabs button,
+.admin-compose,
+.admin-page button,
+.admin-link {
+  font-weight: 500;
+}
+
+.admin-user-card span,
+.admin-muted,
+.admin-error,
+.admin-success,
+.admin-feed-main em,
+.admin-feed-main small,
+.admin-metric span {
+  font-weight: 400;
+}
+
+.admin-pane-header span,
+.admin-side-search kbd,
+.admin-status-pill,
+.admin-order-strip span,
+.admin-attachment-row span,
+.admin-order-card code,
+.admin-feed-main em {
+  font-family: var(--admin-mono);
+}
+
+@keyframes adminPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .5; }
+}
+
+@keyframes cms-spin {
+  to { transform: rotate(360deg); }
+}

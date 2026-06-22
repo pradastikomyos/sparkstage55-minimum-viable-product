@@ -1,0 +1,26 @@
+sequenceDiagram
+    %% Sequence Diagram Login - Rosa & Shalahuddin Style
+    participant User
+    participant m as m: Main
+    participant an as an: Antarmuka
+    participant v as v: Validasi
+    participant k as k: KoneksiBasisData
+
+    User->>m: main()
+    m->>an: 1: formLogin()
+    User->>an: 2: input email dan password
+    an->>v: 3: signInWithPassword()
+    
+    %% Siklus Database ala Rosa
+    v->>k: 4: <<create>>
+    k-->>v: 5: <<create>>
+    v->>k: 6: open()
+    v->>k: 7: queryCekRole()
+    k->>k: 8: execute()
+    k-->>v: 9: getResult()
+    v->>k: 10: close()
+    k-->>v: 11: <<destroy>>
+    v-->>v: 12: <<destroy>>
+    
+    v-->>an: 13: session & role
+    an-->>User: 14: redirect ke halaman tujuan

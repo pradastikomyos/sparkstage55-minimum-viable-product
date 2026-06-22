@@ -1,0 +1,310 @@
+import { useEffect, useMemo, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Link, useNavigate } from 'react-router-dom';
+import { Minus, Plus, Trash, X } from '@phosphor-icons/react';
+import { useUIStore } from '../../store/uiStore';
+import { isSupabaseConfigured } from '../../lib/supabase';
+import {
+  getOrCreateActiveCart,
+  listCartItems,
+  removeCartItem,
+  updateCartItemQuantity,
+} from '../../services/cart';
+import { createDokuCheckout } from '../../services/commerce';
+import { loadDokuCheckoutScript, openDokuCheckout } from '../../utils/dokuCheckout';
+import type { CartItem } from '../../types/commerce';
+import { useAuthUser } from '../../hooks/useCartSummary';
+
+const IDR = new Intl.NumberFormat('id-ID', {
+  style: 'currency',
+  currency: 'IDR',
+  maximumFractionDigits: 0,
+});
+
+export function CartDrawer() {
+  const cartDrawerOpen = useUIStore((state) => state.cartDrawerOpen);
+  const setCartDrawerOpen = useUIStore((state) => state.setCartDrawerOpen);
+  const navigate = useNavigate();
+  const { userId, email } = useAuthUser();
+  const queryClient = useQueryClient();
+
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+
+  // Lock background scroll while the drawer is open.
+  useEffect(() => {
+    if (!cartDrawerOpen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [cartDrawerOpen]);
+
+  // Close on ESC + focus trap.
+  useEffect(() => {
+    if (!cartDrawerOpen) return;
+    const drawer = document.querySelector('.cart-drawer');
+    if (!drawer) return;
+
+    const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    const getFocusable = () => Array.from(drawer.querySelectorAll<HTMLElement>(focusableSelector))
+      .filter((element) => {
+        const disabled = element.hasAttribute('disabled') || element.getAttribute('aria-disabled') === 'true';
+        const hidden = element.offsetParent === null;
+        return !disabled && !hidden;
+      });
+
+    // Auto-focus first focusable element
+    const first = getFocusable()[0];
+    if (first) first.focus();
+
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setCartDrawerOpen(false);
+        return;
+      }
+      if (event.key !== 'Tab') return;
+
+      const focusable = getFocusable();
+      if (focusable.length === 0) return;
+
+      const firstEl = focusable[0];
+      const lastEl = focusable[focusable.length - 1];
+
+      if (event.shiftKey) {
+        if (document.activeElement === firstEl) {
+          event.preventDefault();
+          lastEl.focus();
+        }
+      } else {
+        if (document.activeElement === lastEl) {
+          event.preventDefault();
+          firstEl.focus();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [cartDrawerOpen, setCartDrawerOpen]);
+
+  const itemsQuery = useQuery({
+    queryKey: ['cart', userId],
+    queryFn: async (): Promise<CartItem[]> => {
+      if (!userId) return [];
+      const { id } = await getOrCreateActiveCart(userId);
+      return listCartItems(id);
+    },
+    enabled: cartDrawerOpen && isSupabaseConfigured && Boolean(userId),
+  });
+
+  const items = itemsQuery.data ?? [];
+  const total = useMemo(
+    () => items.reduce((acc, item) => acc + item.quantity * item.unit_price_idr, 0),
+    [items],
+  );
+
+  const invalidateCart = () => {
+    queryClient.invalidateQueries({ queryKey: ['cart', userId] });
+    queryClient.invalidateQueries({ queryKey: ['cart-summary', userId] });
+  };
+
+  const updateMutation = useMutation({
+    mutationFn: (payload: { itemId: string; quantity: number }) =>
+      updateCartItemQuantity(payload.itemId, payload.quantity),
+    onSuccess: invalidateCart,
+  });
+
+  const removeMutation = useMutation({
+    mutationFn: (itemId: string) => removeCartItem(itemId),
+    onSuccess: invalidateCart,
+  });
+
+  const handleCheckout = async () => {
+    if (!items.length || !email) return;
+    setCheckoutError(null);
+    setIsCheckingOut(true);
+    try {
+      await loadDokuCheckoutScript();
+      const result = await createDokuCheckout({
+        customer: {
+          name: email ?? 'Customer',
+          email: email ?? undefined,
+          // phone intentionally omitted — DOKU rejects empty string, field is optional
+        },
+        items: items.map((item) => ({
+          product_id: item.product_id,
+          variant_id: item.variant_id ?? undefined,
+          quantity: item.quantity,
+        })),
+      });
+      if (result?.payment_url) {
+        // Navigate to the result page FIRST so it's ready in the background,
+        // then open the DOKU SDK overlay on top of it.
+        // If navigate is called after openDokuCheckout, the SDK overlay
+        // detects the page change and closes itself immediately.
+        setCartDrawerOpen(false);
+        navigate(`/checkout-result?invoice=${encodeURIComponent(result.invoice_number)}&pending=1`);
+        // Small tick to let React commit the navigation before SDK overlay mounts
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        openDokuCheckout(result.payment_url);
+        return;
+      }
+      setCheckoutError('Checkout did not return a payment URL.');
+    } catch (error) {
+      setCheckoutError(error instanceof Error ? error.message : 'Checkout failed.');
+    } finally {
+      setIsCheckingOut(false);
+    }
+  };
+
+  const guest = !userId;
+  const loginHref = (() => {
+    if (typeof window === 'undefined') return '/login';
+    const redirect = window.location.pathname + window.location.search;
+    return `/login?redirect=${encodeURIComponent(redirect)}`;
+  })();
+
+  return (
+    <div
+      className={`cart-drawer-container${cartDrawerOpen ? ' is-open' : ''}`}
+      aria-hidden={!cartDrawerOpen}
+    >
+      <div className="cart-drawer-scrim" onClick={() => setCartDrawerOpen(false)} />
+      <aside
+        className="cart-drawer"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Shopping bag"
+      >
+        <header className="cart-drawer-header">
+          <h2 className="cart-drawer-title">Keranjang</h2>
+          <button
+            type="button"
+            className="cart-drawer-close"
+            aria-label="Close bag"
+            onClick={() => setCartDrawerOpen(false)}
+          >
+            <X size={20} weight="regular" />
+          </button>
+        </header>
+
+        <div className="cart-drawer-body">
+          {!isSupabaseConfigured ? (
+            <div className="cart-drawer-error">
+              Supabase belum dikonfigurasi. Keranjang akan tersedia setelah environment diatur.
+            </div>
+          ) : guest ? (
+            <div className="cart-drawer-guest">
+              <p>Masuk untuk melihat keranjang Anda.</p>
+              <a href={loginHref}>Masuk</a>
+            </div>
+          ) : itemsQuery.isLoading ? (
+            <div className="cart-drawer-loading">Memuat keranjang…</div>
+          ) : itemsQuery.isError ? (
+            <div className="cart-drawer-error">
+              {itemsQuery.error instanceof Error
+                ? itemsQuery.error.message
+                : 'Gagal memuat keranjang.'}
+            </div>
+          ) : items.length === 0 ? (
+            <div className="cart-drawer-empty">
+              <p>Keranjang kosong</p>
+              <Link to="/">Lanjutkan belanja</Link>
+            </div>
+          ) : (
+            <ul className="cart-drawer-list">
+              {items.map((item) => {
+                const lineTotal = item.quantity * item.unit_price_idr;
+                const busy =
+                  (updateMutation.isPending &&
+                    updateMutation.variables?.itemId === item.id) ||
+                  (removeMutation.isPending && removeMutation.variables === item.id);
+                return (
+                  <li key={item.id} className="cart-drawer-item">
+                    <div className="cart-drawer-item-image">
+                      {item.product_image ? (
+                        <img src={item.product_image} alt={item.product_name} />
+                      ) : null}
+                    </div>
+                    <div className="cart-drawer-item-body">
+                      <p className="cart-drawer-item-name">{item.product_name}</p>
+                      {item.variant_name ? (
+                        <p className="cart-drawer-item-variant">{item.variant_name}</p>
+                      ) : null}
+                      {item.sku ? <p className="cart-drawer-item-sku">SKU {item.sku}</p> : null}
+                      <div className="cart-drawer-item-footer">
+                        <div className="cart-drawer-qty" aria-label="Quantity">
+                          <button
+                            type="button"
+                            className="cart-drawer-qty-btn"
+                            aria-label="Decrease quantity"
+                            disabled={busy}
+                            onClick={() =>
+                              updateMutation.mutate({
+                                itemId: item.id,
+                                quantity: item.quantity - 1,
+                              })
+                            }
+                          >
+                            <Minus size={12} />
+                          </button>
+                          <span className="cart-drawer-qty-value">{item.quantity}</span>
+                          <button
+                            type="button"
+                            className="cart-drawer-qty-btn"
+                            aria-label="Increase quantity"
+                            disabled={busy}
+                            onClick={() =>
+                              updateMutation.mutate({
+                                itemId: item.id,
+                                quantity: item.quantity + 1,
+                              })
+                            }
+                          >
+                            <Plus size={12} />
+                          </button>
+                        </div>
+                        <span className="cart-drawer-item-line">{IDR.format(lineTotal)}</span>
+                        <button
+                          type="button"
+                          className="cart-drawer-item-remove"
+                          aria-label={`Remove ${item.product_name}`}
+                          disabled={busy}
+                          onClick={() => removeMutation.mutate(item.id)}
+                        >
+                          <Trash size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+
+        {!guest && isSupabaseConfigured && items.length > 0 ? (
+          <footer className="cart-drawer-footer">
+            <div className="cart-drawer-total">
+              <span>Total</span>
+              <span className="cart-drawer-total-value">{IDR.format(total)}</span>
+            </div>
+            {checkoutError ? (
+              <p className="cart-drawer-checkout-error">{checkoutError}</p>
+            ) : null}
+            <button
+              type="button"
+              className="cart-drawer-checkout"
+              disabled={isCheckingOut}
+              onClick={handleCheckout}
+            >
+              {isCheckingOut ? 'Memproses…' : 'Checkout'}
+            </button>
+          </footer>
+        ) : null}
+      </aside>
+    </div>
+  );
+}

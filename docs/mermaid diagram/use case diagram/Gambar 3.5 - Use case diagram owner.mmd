@@ -1,0 +1,36 @@
+%% Use Case Diagram Owner - Spark Stage Fashion Commerce
+%% Fokus pada fitur Read-Only / Monitoring Eksekutif.
+flowchart LR
+    Owner((Owner)):::actor
+
+    subgraph Sistem["Sistem Informasi Penjualan Pakaian Spark Stage 55"]
+        direction TB
+        
+        UC_Login([Melakukan Login]):::usecase
+        UC_ValidasiRole([Memvalidasi Hak Akses]):::usecase
+
+        UC_Dashboard([Melihat Dashboard KPI]):::usecase
+        UC_MonitorProduk([Melihat Total Produk & Stok]):::usecase
+
+        UC_Laporan([Melihat Laporan Transaksi]):::usecase
+        UC_Detail([Melihat Detail Pesanan]):::usecase
+
+        UC_PaymentHealth([Memantau Payment Health DOKU]):::usecase
+
+        UC_Logout([Melakukan Logout]):::usecase
+    end
+
+    Owner --- UC_Login
+    Owner --- UC_Dashboard
+    Owner --- UC_Laporan
+    Owner --- UC_PaymentHealth
+    Owner --- UC_Logout
+
+    UC_Login -. "<<include>>" .-> UC_ValidasiRole
+
+    %% Extend: Fitur melihat detail sebagai perluasan
+    UC_MonitorProduk -. "<<extend>>" .-> UC_Dashboard
+    UC_Detail -. "<<extend>>" .-> UC_Laporan
+
+    classDef actor fill:#ffffff,stroke:#000000,stroke-width:1.5px,color:#111111;
+    classDef usecase fill:#ffffff,stroke:#000000,stroke-width:1.5px,color:#111111;

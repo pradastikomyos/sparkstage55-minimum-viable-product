@@ -1,0 +1,29 @@
+sequenceDiagram
+    %% Sequence Diagram Membuat Pembayaran - Rosa & Shalahuddin Style
+    participant Pelanggan
+    participant m as m: Main
+    participant an as an: Antarmuka
+    participant v as v: Validasi
+    participant k as k: KoneksiBasisData
+    participant d as doku: API DOKU
+
+    Pelanggan->>m: main()
+    m->>an: 1: formKeranjang()
+    Pelanggan->>an: 2: klik checkout pesanan
+    an->>v: 3: invoke(create-doku-checkout)
+    
+    %% Simpan Order ke Database
+    v->>k: 4: <<create>>
+    v->>k: 5: open()
+    v->>k: 6: queryInsertOrder()
+    k->>k: 7: execute()
+    k-->>v: 8: getResult()
+    v->>k: 9: close()
+    k-->>v: 10: <<destroy>>
+    
+    %% Call ke DOKU
+    v->>d: 11: requestPaymentSession()
+    d-->>v: 12: payment_url & session
+    
+    v-->>an: 13: kembalikan payment_url
+    an-->>Pelanggan: 14: redirect ke Hosted Page DOKU

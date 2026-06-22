@@ -1,0 +1,26 @@
+sequenceDiagram
+    %% Sequence Diagram Memverifikasi BOPIS - Rosa & Shalahuddin Style
+    participant Admin
+    participant m as m: Main
+    participant an as an: Antarmuka
+    participant v as v: Validasi
+    participant k as k: KoneksiBasisData
+
+    Admin->>m: main()
+    m->>an: 1: formBOPIS()
+    Admin->>an: 2: scan QR code pickup
+    an->>v: 3: invoke(verify-pickup-code)
+    
+    %% Update Status Order di Database
+    v->>k: 4: <<create>>
+    k-->>v: 5: <<create>>
+    v->>k: 6: open()
+    v->>k: 7: queryUpdateStatus(picked_up)
+    k->>k: 8: execute()
+    k-->>v: 9: getResult()
+    v->>k: 10: close()
+    k-->>v: 11: <<destroy>>
+    v-->>v: 12: <<destroy>>
+    
+    v-->>an: 13: verifikasi valid
+    an-->>Admin: 14: tampilkan status pesanan selesai

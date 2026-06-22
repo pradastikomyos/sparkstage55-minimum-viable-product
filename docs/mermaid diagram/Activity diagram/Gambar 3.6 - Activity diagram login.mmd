@@ -1,0 +1,34 @@
+%% Activity Diagram Login & Registrasi - Spark Stage Fashion Commerce
+flowchart TB
+    Start((Start)):::startEnd --> HalamanLogin[Membuka Halaman Autentikasi]:::activity
+    HalamanLogin --> PilihAksi{Pilih Aksi?}:::decision
+
+    %% Alur Pendaftaran & Verifikasi Email
+    PilihAksi -- Daftar --> InputDaftar[Input Data Pendaftaran]:::activity
+    InputDaftar --> KirimEmail[Sistem Mengirim Email Verifikasi]:::activity
+    KirimEmail --> VerifEmail[User Melakukan Verifikasi Email]:::activity
+    VerifEmail --> InputLogin
+
+    %% Alur Login
+    PilihAksi -- Login --> InputLogin[Input Email & Password]:::activity
+    InputLogin --> ValidasiAuth[Validasi via Supabase Auth]:::activity
+    ValidasiAuth --> CekValid{Data Valid?}:::decision
+
+    CekValid -- Tidak --> TampilError[Tampilkan Pesan Error]:::activity
+    TampilError --> HalamanLogin
+
+    CekValid -- Ya --> CekRole[Cek Role Pengguna]:::activity
+    CekRole --> TentukanRole{Role?}:::decision
+
+    TentukanRole -- Admin --> DashAdmin[Buka Dashboard Admin]:::activity
+    TentukanRole -- Owner --> DashOwner[Buka Page Monitoring Owner]:::activity
+    TentukanRole -- Pelanggan --> HalUtama[Buka Halaman Utama / Tujuan]:::activity
+
+    DashAdmin --> Selesai
+    DashOwner --> Selesai
+    HalUtama --> Selesai
+    Selesai((Finish)):::startEnd
+
+    classDef startEnd fill:#111111,stroke:#111111,color:#ffffff;
+    classDef activity fill:#fffaf0,stroke:#8a6d3b,stroke-width:1.2px,color:#111111;
+    classDef decision fill:#ffffff,stroke:#111111,stroke-width:1.4px,color:#111111;

@@ -1,0 +1,26 @@
+%% Activity Diagram Admin - Spark Stage Fashion Commerce
+flowchart TB
+    Start((Start)):::startEnd --> BukaDash[Buka Dashboard Admin]:::activity
+    BukaDash --> PilihMenu{Pilih Menu?}:::decision
+
+    PilihMenu -- Master Data --> KelolaProduk[Mengelola Produk & Kategori]:::activity
+    PilihMenu -- Transaksi --> KelolaPesanan[Mengelola Data Pesanan]:::activity
+    PilihMenu -- BOPIS --> VerifikasiPickup[Memindai QR & Verifikasi BOPIS]:::activity
+    PilihMenu -- Konten --> KelolaCMS[Mengelola CMS & Banner]:::activity
+    PilihMenu -- Laporan --> LihatLaporan[Melihat Laporan Harian]:::activity
+
+    KelolaProduk --> Gabung[ ]:::join
+    KelolaPesanan --> Gabung
+    VerifikasiPickup --> Gabung
+    KelolaCMS --> Gabung
+    LihatLaporan --> Gabung
+
+    Gabung --> CekLanjut{Kembali/Logout?}:::decision
+    CekLanjut -- Kembali --> BukaDash
+    CekLanjut -- Logout --> ProsesLogout[Melakukan Logout]:::activity
+    ProsesLogout --> Selesai((Finish)):::startEnd
+
+    classDef startEnd fill:#111111,stroke:#111111,color:#ffffff;
+    classDef activity fill:#fffaf0,stroke:#8a6d3b,stroke-width:1.2px,color:#111111;
+    classDef decision fill:#ffffff,stroke:#111111,stroke-width:1.4px,color:#111111;
+    classDef join fill:#111111,stroke:#111111,color:#ffffff;

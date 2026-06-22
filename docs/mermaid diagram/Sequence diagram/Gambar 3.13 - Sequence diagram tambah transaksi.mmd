@@ -1,0 +1,26 @@
+sequenceDiagram
+    %% Sequence Diagram Tambah Transaksi - Rosa & Shalahuddin Style
+    participant Admin
+    participant m as m: Main
+    participant an as an: Antarmuka
+    participant v as v: Validasi
+    participant k as k: KoneksiBasisData
+
+    Admin->>m: main()
+    m->>an: 1: formKelolaPesanan()
+    Admin->>an: 2: input data transaksi baru
+    an->>v: 3: insertDataTransaksi()
+    
+    %% Siklus Database
+    v->>k: 4: <<create>>
+    k-->>v: 5: <<create>>
+    v->>k: 6: open()
+    v->>k: 7: queryInsertTransaksi()
+    k->>k: 8: execute()
+    k-->>v: 9: getResult()
+    v->>k: 10: close()
+    k-->>v: 11: <<destroy>>
+    v-->>v: 12: <<destroy>>
+    
+    v-->>an: 13: status sukses
+    an-->>Admin: 14: tampilkan pesan berhasil

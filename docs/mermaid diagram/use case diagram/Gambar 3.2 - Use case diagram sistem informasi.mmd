@@ -1,0 +1,51 @@
+%% Use Case Diagram Sistem Informasi - Spark Stage Fashion Commerce
+%% Peta umum interaksi aktor dengan sistem; detail validasi, webhook, dan fungsi backend dijelaskan pada activity/sequence diagram.
+flowchart LR
+    Pelanggan((Pelanggan)):::actor
+    Admin((Admin)):::actor
+    Owner((Owner)):::actor
+    DOKU((DOKU Payment Gateway)):::external
+
+    subgraph Sistem["Sistem Informasi Penjualan Pakaian Spark Stage"]
+        direction TB
+
+        UC_Auth([Melakukan Autentikasi / Login]):::usecase
+
+        UC_Katalog([Melihat Katalog Produk]):::usecase
+        UC_Keranjang([Mengelola Keranjang Belanja]):::usecase
+        UC_Checkout([Melakukan Checkout Pesanan]):::usecase
+        UC_Riwayat([Melihat Riwayat Pesanan dan QR Pickup]):::usecase
+
+        UC_KelolaProduk([Mengelola Data Master Produk]):::usecase
+        UC_KelolaPesanan([Mengelola Data Pesanan]):::usecase
+        UC_BOPIS([Memverifikasi Pengambilan BOPIS]):::usecase
+        UC_KelolaCMS([Mengelola Konten dan Banner CMS]):::usecase
+
+        UC_Laporan([Melihat Dashboard dan Laporan Penjualan]):::usecase
+        UC_Payment([Memproses Pembayaran Digital]):::usecase
+    end
+
+    Pelanggan --- UC_Katalog
+    Pelanggan --- UC_Keranjang
+    Pelanggan --- UC_Checkout
+    Pelanggan --- UC_Riwayat
+    Pelanggan --- UC_Auth
+
+    Admin --- UC_Auth
+    Admin --- UC_KelolaProduk
+    Admin --- UC_KelolaPesanan
+    Admin --- UC_BOPIS
+    Admin --- UC_KelolaCMS
+    Admin --- UC_Laporan
+
+    Owner --- UC_Auth
+    Owner --- UC_Laporan
+
+    DOKU --- UC_Payment
+
+    UC_Checkout -. "<<include>>" .-> UC_Auth
+    UC_Checkout -. "<<include>>" .-> UC_Payment
+
+    classDef actor fill:#ffffff,stroke:#000000,stroke-width:1.5px,color:#111111;
+    classDef external fill:#f6f6f6,stroke:#000000,stroke-width:1.5px,stroke-dasharray:4 3,color:#111111;
+    classDef usecase fill:#ffffff,stroke:#000000,stroke-width:1.5px,color:#111111;

@@ -1,0 +1,216 @@
+classDiagram
+    direction LR
+    %% Class Diagram Sistem Informasi - Spark Stage Fashion Commerce
+    %% Ditarik dari skema database Supabase MCP (Production)
+
+    class Profile {
+        +uuid id
+        +text email
+        +text full_name
+        +app_role role
+        +timestamptz created_at
+        +timestamptz updated_at
+    }
+
+    class ProductCategory {
+        +uuid id
+        +text name
+        +text slug
+        +int sort_order
+        +boolean is_active
+        +timestamptz created_at
+    }
+
+    class Product {
+        +uuid id
+        +text name
+        +text slug
+        +text sku
+        +text description
+        +text category
+        +product_status status
+        +int base_price_idr
+        +int sort_order
+        +timestamptz created_at
+        +timestamptz updated_at
+    }
+
+    class ProductVariant {
+        +uuid id
+        +uuid product_id
+        +text name
+        +text sku
+        +int price_idr
+        +int stock_quantity
+        +jsonb attributes
+        +timestamptz created_at
+        +timestamptz updated_at
+    }
+
+    class ProductImage {
+        +uuid id
+        +uuid product_id
+        +text storage_path
+        +text image_url
+        +text alt
+        +int sort_order
+        +timestamptz created_at
+    }
+
+    class Cart {
+        +uuid id
+        +uuid user_id
+        +text status
+        +timestamptz created_at
+        +timestamptz updated_at
+    }
+
+    class CartItem {
+        +uuid id
+        +uuid cart_id
+        +uuid product_id
+        +uuid variant_id
+        +int quantity
+        +int unit_price_idr
+        +timestamptz created_at
+    }
+
+    class Order {
+        +uuid id
+        +uuid user_id
+        +text invoice_number
+        +text customer_name
+        +text customer_email
+        +text customer_phone
+        +order_status status
+        +payment_status payment_status
+        +int total_amount_idr
+        +text doku_payment_url
+        +text doku_session_id
+        +timestamptz paid_at
+        +timestamptz picked_up_at
+        +timestamptz inventory_finalized_at
+        +timestamptz created_at
+        +timestamptz updated_at
+    }
+
+    class OrderItem {
+        +uuid id
+        +uuid order_id
+        +uuid product_id
+        +uuid variant_id
+        +text product_name
+        +text sku
+        +int quantity
+        +int unit_price_idr
+        +int line_total_idr
+    }
+
+    class PaymentAttempt {
+        +uuid id
+        +uuid order_id
+        +text provider
+        +text provider_reference
+        +text request_id
+        +payment_status status
+        +int amount_idr
+        +jsonb raw_payload
+        +timestamptz created_at
+        +timestamptz updated_at
+    }
+
+    class PaymentEvent {
+        +uuid id
+        +uuid order_id
+        +text invoice_number
+        +text provider
+        +text event_source
+        +text provider_reference
+        +text provider_request_id
+        +text idempotency_key
+        +payment_status payment_status
+        +int amount_idr
+        +jsonb raw_payload
+        +jsonb headers
+        +text processing_status
+        +timestamptz processed_at
+        +text error_message
+        +timestamptz created_at
+    }
+
+    class PickupCode {
+        +uuid id
+        +uuid order_id
+        +text code
+        +text qr_payload
+        +uuid verified_by
+        +timestamptz verified_at
+        +timestamptz created_at
+    }
+
+    class InventoryReservation {
+        +uuid id
+        +uuid order_id
+        +uuid order_item_id
+        +uuid product_id
+        +uuid variant_id
+        +int quantity
+        +text status
+        +timestamptz expires_at
+        +timestamptz finalized_at
+        +timestamptz released_at
+        +timestamptz created_at
+    }
+
+    class Banner {
+        +uuid id
+        +text page
+        +text label
+        +text image_url
+        +text link_url
+        +boolean is_active
+        +int sort_order
+        +timestamptz created_at
+        +timestamptz updated_at
+    }
+
+    class SiteAsset {
+        +uuid id
+        +text slot
+        +text bucket
+        +text storage_path
+        +text public_url
+        +text mime_type
+        +text label
+        +uuid updated_by
+        +timestamptz created_at
+        +timestamptz updated_at
+    }
+
+    %% Relasi Antar Tabel (Entity Relationships)
+    Profile "1" --> "*" Cart : memiliki
+    Profile "1" --> "*" Order : membuat
+
+    Product "1" --> "*" ProductVariant : memiliki
+    Product "1" --> "*" ProductImage : memiliki
+    ProductCategory "1" ..> "*" Product : mengelompokkan
+
+    Cart "1" --> "*" CartItem : berisi
+    Product "1" --> "*" CartItem : dipilih
+    ProductVariant "0..1" --> "*" CartItem : varian
+
+    Order "1" --> "*" OrderItem : berisi
+    Product "0..1" --> "*" OrderItem : referensi_produk
+    ProductVariant "0..1" --> "*" OrderItem : referensi_varian
+
+    Order "1" --> "*" PaymentAttempt : percobaan_pembayaran
+    Order "1" --> "*" PaymentEvent : event_pembayaran
+    Order "1" --> "0..1" PickupCode : kode_pickup
+    Order "1" --> "*" InventoryReservation : reservasi_stok
+
+    OrderItem "1" --> "0..1" InventoryReservation : mengunci_stok
+    Product "0..1" --> "*" InventoryReservation : produk
+    ProductVariant "1" --> "*" InventoryReservation : varian
+
+    Profile "1" --> "*" PickupCode : memverifikasi
+    Profile "1" --> "*" SiteAsset : memperbarui

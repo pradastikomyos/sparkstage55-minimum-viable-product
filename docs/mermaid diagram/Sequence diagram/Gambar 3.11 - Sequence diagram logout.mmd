@@ -1,0 +1,13 @@
+sequenceDiagram
+    %% Sequence Diagram Logout - Rosa & Shalahuddin Style
+    participant User
+    participant m as m: Main
+    participant an as an: Antarmuka
+    participant v as v: Validasi
+
+    User->>m: main()
+    m->>an: 1: formDashboard()
+    User->>an: 2: klik tombol logout
+    an->>v: 3: signOut()
+    v-->>an: 4: session dihapus
+    an-->>User: 5: redirect ke formLogin()

@@ -1,0 +1,15 @@
+/* Admin CSS — barrel file. All rules live in admin/ partials.
+   Import order matters: base → layout → components → forms →
+   section-specific → utilities */
+
+@import './admin/_base.css';
+@import './admin/_layout.css';
+@import './admin/_components.css';
+@import './admin/_forms.css';
+@import './admin/_utilities.css';
+@import './admin/_inventory.css';
+@import './admin/_orders.css';
+@import './admin/_payments.css';
+@import './admin/_bopis.css';
+@import './admin/_cms.css';
+@import './admin/_dashboard.css';

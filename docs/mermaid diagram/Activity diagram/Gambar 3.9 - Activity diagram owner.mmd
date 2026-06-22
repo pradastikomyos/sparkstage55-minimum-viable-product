@@ -1,0 +1,22 @@
+%% Activity Diagram Owner - Spark Stage Fashion Commerce
+flowchart TB
+    Start((Start)):::startEnd --> BukaOwner[Buka Page Monitoring Owner]:::activity
+    BukaOwner --> PilihMenu{Pilih Menu?}:::decision
+
+    PilihMenu -- Dashboard --> Dash[Melihat Dashboard KPI & Stok]:::activity
+    PilihMenu -- Laporan --> Laporan[Melihat Laporan Transaksi]:::activity
+    PilihMenu -- Pembayaran --> Payment[Memantau Payment Health DOKU]:::activity
+
+    Dash --> Gabung[ ]:::join
+    Laporan --> Gabung
+    Payment --> Gabung
+
+    Gabung --> CekLanjut{Kembali/Logout?}:::decision
+    CekLanjut -- Kembali --> BukaOwner
+    CekLanjut -- Logout --> ProsesLogout[Melakukan Logout]:::activity
+    ProsesLogout --> Selesai((Finish)):::startEnd
+
+    classDef startEnd fill:#111111,stroke:#111111,color:#ffffff;
+    classDef activity fill:#fffaf0,stroke:#8a6d3b,stroke-width:1.2px,color:#111111;
+    classDef decision fill:#ffffff,stroke:#111111,stroke-width:1.4px,color:#111111;
+    classDef join fill:#111111,stroke:#111111,color:#ffffff;

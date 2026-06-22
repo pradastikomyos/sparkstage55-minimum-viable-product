@@ -1,0 +1,147 @@
+import { FormEvent, useMemo, useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { ViewIcon, ViewOffIcon } from '@hugeicons/core-free-icons';
+import { BrandLogo } from '../components/ui/BrandLogo';
+import { isSupabaseConfigured, supabase } from '../lib/supabase';
+import { getUserRole, resolvePostLoginPath } from '../services/auth';
+import { useSiteAssets } from '../hooks/useSiteAssets';
+
+export function LoginPage() {
+  const [mode, setMode] = useState<'login' | 'signup'>('login');
+  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { assetMap, isReady } = useSiteAssets();
+  const editorialSrc = isReady ? assetMap['login.editorial'] : null;
+  const navigate = useNavigate();
+  const isSignup = mode === 'signup';
+  const requestedRedirect = useMemo(() => new URLSearchParams(window.location.search).get('redirect'), []);
+
+  useEffect(() => { document.title = 'Spark Stage - Log In or Sign Up'; }, []);
+
+  const submitAuth = async (event: FormEvent) => {
+    event.preventDefault();
+    setAuthError(null);
+    setStatusMessage(null);
+
+    if (!supabase || !isSupabaseConfigured) {
+      setAuthError('Supabase env belum tersedia.');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      let userId: string | undefined;
+
+      if (isSignup) {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+        });
+
+        if (error) throw error;
+        userId = data.user?.id;
+        setStatusMessage('Account created. You can continue.');
+      } else {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) throw error;
+        userId = data.user?.id;
+      }
+
+      const role = userId ? await getUserRole(userId) : null;
+      navigate(resolvePostLoginPath(role, requestedRedirect));
+    } catch (error) {
+      setAuthError(error instanceof Error ? error.message : 'Authentication failed.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="login-page">
+      <div className="login-left">
+        <header className="login-logo">
+          <Link to="/" className="login-back-btn" aria-label="Back to homepage" title="Back to homepage">
+            &#8592;
+          </Link>
+          <Link to="/" aria-label="Spark Stage home"><BrandLogo /></Link>
+        </header>
+        <main className="login-form-area">
+          <h2 className="login-heading">LOG IN OR SIGN UP</h2>
+          <form className="login-form" onSubmit={submitAuth}>
+            <div className="field">
+              <label htmlFor="email">E-MAIL</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                autoComplete="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                required
+                autoFocus
+              />
+            </div>
+            <div className="field field-password">
+              <label htmlFor="password">{isSignup ? 'CREATE PASSWORD' : 'PASSWORD'}</label>
+              <div className="password-wrapper">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  id="password"
+                  name="password"
+                  autoComplete={isSignup ? 'new-password' : 'current-password'}
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  required
+                />
+                <button type="button" className="password-toggle" aria-label={showPassword ? 'Hide password' : 'Show password'} onClick={() => setShowPassword((value) => !value)}>
+                  <HugeiconsIcon icon={showPassword ? ViewOffIcon : ViewIcon} size={22} strokeWidth={1.5} />
+                </button>
+              </div>
+            </div>
+            <button
+              type="submit"
+              className="btn-continue"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'PLEASE WAIT' : isSignup ? 'CREATE ACCOUNT' : 'LOG IN'}
+            </button>
+            {authError ? <p className="login-message login-message-error">{authError}</p> : null}
+            {statusMessage ? <p className="login-message login-message-success">{statusMessage}</p> : null}
+            <p className="toggle-text">
+              {isSignup ? 'Sudah punya akun? ' : 'Belum punya akun? '}
+              <button type="button" className="toggle-link" onClick={() => {
+                setMode(isSignup ? 'login' : 'signup');
+                setShowPassword(false);
+                setPassword('');
+                setAuthError(null);
+                setStatusMessage(null);
+              }}>{isSignup ? 'Masuk' : 'Daftar'}</button>
+            </p>
+          </form>
+          <div className="divider"><span>AKSES DENGAN</span></div>
+          <p className="sso-disclaimer">Login sosial belum tersedia untuk demo ini.</p>
+          <button className="btn-sso" type="button" disabled aria-disabled="true" title="Segera hadir">LANJUTKAN DENGAN GOOGLE</button>
+          <button className="btn-sso" type="button" disabled aria-disabled="true" title="Segera hadir">LANJUTKAN DENGAN APPLE</button>
+        </main>
+        <footer className="login-help"><button type="button" className="inline-link is-placeholder" aria-disabled="true" data-ui="placeholder">HELP</button></footer>
+      </div>
+      <div className="login-right">
+        {editorialSrc ? (
+          <img src={editorialSrc} alt="Fashion Editorial" />
+        ) : (
+          <div className="login-editorial-skeleton" aria-hidden="true" />
+        )}
+      </div>
+    </div>
+  );
+}

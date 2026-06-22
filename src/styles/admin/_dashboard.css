@@ -1,0 +1,134 @@
+.admin-dashboard {
+  padding: 0 24px;
+}
+
+.admin-dashboard-header {
+  margin-bottom: 24px;
+}
+
+.admin-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.admin-kpi-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 20px;
+  background: #fff;
+  border: 1px solid #e9e9e9;
+  border-radius: 14px;
+  text-align: left;
+  transition: all 200ms ease;
+  overflow: hidden;
+}
+
+.admin-kpi-card:hover {
+  border-color: #d0d0d0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+}
+
+.admin-kpi-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 16px;
+  background: #FAFAF9;
+  border-radius: 10px;
+  color: #1C1917;
+}
+
+.admin-kpi-icon--active {
+  background: #F0FDF4;
+  color: #16A34A;
+}
+
+.admin-kpi-icon--orders {
+  background: #EFF6FF;
+  color: #2563EB;
+}
+
+.admin-kpi-icon--pickup {
+  background: #FEF2F2;
+  color: #DC2626;
+}
+
+.admin-kpi-label {
+  color: #44403C;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.admin-kpi-value {
+  font-size: 28px;
+  font-weight: 600;
+  color: #1C1917;
+}
+
+.admin-kpi-delta {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  background: #f5f5f5;
+  color: #666;
+}
+
+.admin-kpi-delta--up {
+  background: #DCFCE7;
+  color: #16A34A;
+}
+
+.admin-kpi-delta--down, .admin-kpi-delta--warning {
+  background: #FEF2F2;
+  color: #DC2626;
+}
+
+.admin-kpi-delta--muted {
+  background: #F5F5F5;
+  color: #A8A29E;
+}
+
+.admin-dashboard-quicklinks {
+  margin-top: 32px;
+}
+
+.admin-quicklink-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.admin-quicklink {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: #FAFAF9;
+  border: 1px solid #E7E5E4;
+  border-radius: 12px;
+  color: #1C1917;
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 150ms ease;
+}
+
+.admin-quicklink:hover {
+  background: #1C1917;
+  color: #fff;
+  border-color: #1C1917;
+}
