@@ -1,6 +1,26 @@
-@import '@fontsource/inter/latin-400.css';
-@import '@fontsource/inter/latin-500.css';
-@import '@fontsource/inter/latin-600.css';
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('../fonts/inter/inter-latin-400-normal.woff2') format('woff2'), url('../fonts/inter/inter-latin-400-normal.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url('../fonts/inter/inter-latin-500-normal.woff2') format('woff2'), url('../fonts/inter/inter-latin-500-normal.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: url('../fonts/inter/inter-latin-600-normal.woff2') format('woff2'), url('../fonts/inter/inter-latin-600-normal.woff') format('woff');
+}
 
 @font-face {
   font-family: 'Monospace821 BT';
@@ -55,24 +75,20 @@ a { text-decoration: none; color: inherit; }
 }
 
 .brand-logo {
-  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 120px;
 }
 
 .shop-header .brand-logo-image,
 .listing-header .brand-logo-image {
-  position: static;
-  transform: none;
   opacity: 1;
 }
 
 .brand-logo-image {
-  width: 100%;
-  height: auto;
-  object-fit: contain;
+  display: block;
+  max-height: 42.4px;
+  width: auto;
 }
 
 .shop-header .brand-logo-image--dark,

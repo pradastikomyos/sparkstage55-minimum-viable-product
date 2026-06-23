@@ -332,12 +332,9 @@ a {
 
 .brand-logo {
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 120px;
-  height: 36px; /* Fixed height — images are absolutely positioned so container needs explicit height */
-  overflow: hidden;
+  display: inline-flex;
+  height: 42.4px;
+  width: 90.6px; /* logo 240x112 at height 42.4px → width ≈ 90.6px */
 }
 
 .header-center {
@@ -350,9 +347,8 @@ a {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
   height: 100%;
-  object-fit: contain;
+  width: auto;
   transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
