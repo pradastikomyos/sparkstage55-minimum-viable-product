@@ -8,6 +8,7 @@ import {
 } from '@hugeicons/core-free-icons';
 import { AdminIcon } from './AdminIcon';
 import { AdminOrder } from '../../types/commerce';
+import { getFirstPickupCode } from '../../utils/orderHelpers';
 
 const formatIDR = (amount: number) =>
   new Intl.NumberFormat('id-ID', {
@@ -43,6 +44,7 @@ export function PickupVerificationCard({
     orderDetail !== null &&
     orderDetail.status === 'pending_pickup' &&
     orderDetail.payment_status === 'paid';
+  const pickupCodeDetail = getFirstPickupCode(orderDetail?.pickup_codes);
 
   return (
     <div className="admin-bopis-container">
@@ -166,11 +168,11 @@ export function PickupVerificationCard({
             <strong>{formatIDR(orderDetail.total_amount_idr)}</strong>
           </div>
 
-          {orderDetail.pickup_codes && orderDetail.pickup_codes.length > 0 ? (
+          {pickupCodeDetail ? (
             <div className="admin-order-detail-row" style={{ marginTop: '8px' }}>
               <span className="admin-muted">Kode Pickup</span>
               <span style={{ fontFamily: 'monospace', fontWeight: 600 }}>
-                {orderDetail.pickup_codes[0].code}
+                {pickupCodeDetail.code}
               </span>
             </div>
           ) : null}

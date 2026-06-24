@@ -1,0 +1,23 @@
+.mega-menu {
+  z-index: var(--z-menu);
+}
+
+.mega-menu-scrim {
+  z-index: var(--z-menu-scrim);
+}
+
+.mega-menu.active {
+  z-index: var(--z-menu);
+}
+
+.search-overlay-container {
+  z-index: var(--z-search);
+}
+
+.cart-drawer-container {
+  z-index: var(--z-cart);
+}
+
+.logout-dialog-overlay {
+  z-index: var(--z-modal);
+}

@@ -141,19 +141,6 @@
   font-size: 11px;
 }
 
-.admin-demo-badge {
-  margin: 8px 12px;
-  padding: 6px 0;
-  background: #f0ede8;
-  border-radius: 6px;
-  text-align: center;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #8a8882;
-}
-
 .admin-nav button,
 .admin-support-link {
   display: flex;

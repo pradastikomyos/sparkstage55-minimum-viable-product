@@ -19,7 +19,7 @@ Proyek ini menggunakan **hybrid approach** yang disengaja:
 Hybrid ini dipertahankan karena:
 - Custom CSS sudah dominan dan stabil untuk halaman visual besar
 - Tailwind berguna untuk admin dashboard yang butuh utility cepat
-- Rewrite penuh ke salah satu arah terlalu mahal untuk scope skripsi
+- Rewrite penuh ke salah satu arah terlalu mahal untuk scope saat ini
 
 ---
 

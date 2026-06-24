@@ -1,7 +1,7 @@
-# Spark Stage Fashion Commerce — Skripsi Prototype
+# Spark Stage Fashion Commerce
 
-Dummy project skripsi berbasis visual clone Prada.com yang diarahkan menjadi Spark Stage fashion
-commerce. Fokus: katalog fashion, cart, checkout DOKU sandbox, BOPIS pickup, dan admin CMS.
+Spark Stage fashion commerce experience. Fokus: katalog fashion, cart, checkout DOKU sandbox,
+BOPIS pickup, dan admin CMS.
 
 ## Structure
 
@@ -10,7 +10,7 @@ sparkstage55/
   src/            Vite SPA — React + TypeScript + React Router v7
   public/         Static assets (images, fonts, icons)
   supabase/       Supabase config, migrations, Edge Functions
-  docs/           Planning, skripsi context, styling guide
+  docs/           Planning, architecture notes, styling guide
   scripts/        Utility scripts (asset upload, etc.)
   package.json    Single package — Vite, React, TypeScript
 ```

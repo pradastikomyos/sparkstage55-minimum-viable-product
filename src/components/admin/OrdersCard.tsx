@@ -3,6 +3,7 @@ import type { AdminOrder, OrderStatus, PaymentStatus } from '../../types/commerc
 import type { OrderTabKey } from '../../pages/admin/OrdersSection';
 import { AdminIcon } from './AdminIcon';
 import { OrderStripSkeleton } from './AdminSkeleton';
+import { getFirstPickupCode } from '../../utils/orderHelpers';
 
 type OrdersCardProps = {
   orders?: AdminOrder[];
@@ -92,7 +93,7 @@ export function OrdersCard({
             </div>
           ) : (
             orders?.map((order) => {
-              const pickupCode = order.pickup_codes?.[0]?.code;
+              const pickupCode = getFirstPickupCode(order.pickup_codes)?.code;
               const paidTs = formatTimestamp(order.paid_at, 'Paid');
               const pickedTs = formatTimestamp(order.picked_up_at, 'Picked up');
 
@@ -151,7 +152,7 @@ export function OrdersCard({
                 </span>
                 <span>
                   <AdminIcon icon={QrCodeScanIcon} size={16} />
-                  {selectedOrder.pickup_codes?.[0]?.code ?? 'No pickup code'}
+                  {getFirstPickupCode(selectedOrder.pickup_codes)?.code ?? 'No pickup code'}
                 </span>
               </div>
 

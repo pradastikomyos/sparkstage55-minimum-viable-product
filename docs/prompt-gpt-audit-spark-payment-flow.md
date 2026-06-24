@@ -2,7 +2,7 @@
 
 ## Konteks
 
-Kamu berada di projek Spark Stage production (`C:\Users\prada\Documents\sparkstage`). Saya butuh kamu mengintip dan mendokumentasikan **super detail** (baris demi baris jika perlu) alur berikut dari projek Spark asli. Hasilnya akan dipakai sebagai contekan arsitektur untuk projek clone skripsi (`prada-clone`).
+Kamu berada di projek Spark Stage production (`C:\Users\prada\Documents\sparkstage`). Saya butuh kamu mengintip dan mendokumentasikan **super detail** (baris demi baris jika perlu) alur berikut dari projek Spark asli. Hasilnya akan dipakai sebagai contekan arsitektur untuk build commerce ini.
 
 ---
 

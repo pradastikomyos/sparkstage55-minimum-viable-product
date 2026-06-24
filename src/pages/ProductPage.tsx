@@ -8,7 +8,9 @@ import { isSupabaseConfigured } from '../lib/supabase';
 import { getProductBySlug } from '../services/commerce';
 import { addItemToCart, LOGIN_REQUIRED } from '../services/cart';
 import { useCartSummary } from '../hooks/useCartSummary';
+import { ProductHeader } from '../widgets/product-header/ProductHeader';
 import type { PublicProductWithVariants } from '../services/commerce';
+import styles from './ProductPage.module.css';
 
 const IDR = new Intl.NumberFormat('id-ID', {
   style: 'currency',
@@ -157,76 +159,73 @@ export function ProductPage() {
         : null;
 
   return (
-    <div className="zara-pdp">
-      <header className="zara-header">
-        <div className="zara-header-left">
-          <button className="zara-back-btn" onClick={() => navigate(-1)}>
-            &#8592;
-          </button>
-        </div>
-        <div className="zara-header-right">
-          <button className="zara-utility-link" onClick={() => setSearchOpen(true)}>CARI</button>
-          <div className="zara-utility-group">
-            <Link className="zara-utility-link" to="/login">LOG IN</Link>
-            <button className="zara-utility-link">BANTUAN</button>
+    <div className={styles.page}>
+      <ProductHeader
+        onBack={() => navigate(-1)}
+        searchLink={
+          <button className={styles.utilityLink} onClick={() => setSearchOpen(true)}>CARI</button>
+        }
+        utilityGroup={
+          <>
+            <Link className={styles.utilityLink} to="/login">LOG IN</Link>
+            <button className={styles.utilityLink}>BANTUAN</button>
             <button
               type="button"
-              className="zara-utility-link"
+              className={styles.utilityLink}
               onClick={() => setCartDrawerOpen(true)}
             >
               KERANJANG ({cartSummary.itemCount})
             </button>
-          </div>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       {showSkeleton ? (
         <PdpSkeleton />
       ) : stateMessage ? (
-        <main className="zara-pdp-main">
+        <main className={styles.main}>
           <CatalogState title={stateMessage.title} message={stateMessage.message} />
         </main>
       ) : (
-        <main className="zara-pdp-main">
-        <div className="zara-pdp-left">
-          <div className="zara-image-gallery">
+        <main className={styles.main}>
+        <div className={styles.leftColumn}>
+          <div className={styles.imageGallery}>
             {galleryImages.length > 0 ? (
               galleryImages.map((img, index) => (
-                <div className="zara-image-item" key={`${img.image_url}-${index}`}>
+                <div className={styles.imageItem} key={`${img.image_url}-${index}`}>
                   <img src={img.image_url} alt={img.alt ?? resolved!.name} />
                 </div>
               ))
             ) : (
-              <div className="zara-image-item">
+              <div className={styles.imageItem}>
                 {resolved!.image ? (
                   <img src={resolved!.image} alt={resolved!.alt} />
                 ) : (
-                  <span className="zara-product-meta">Gambar produk belum tersedia</span>
+                  <span className={styles.productMeta}>Gambar produk belum tersedia</span>
                 )}
               </div>
             )}
           </div>
         </div>
 
-        <div className="zara-pdp-right">
-          <div className="zara-product-info">
-            <h1 className="zara-product-title">{resolved!.name.toUpperCase()}</h1>
-            {resolved!.priceLabel ? <p className="zara-product-price">{resolved!.priceLabel}</p> : null}
+        <div className={styles.rightColumn}>
+          <div className={styles.productInfo}>
+            <h1 className={styles.productTitle}>{resolved!.name.toUpperCase()}</h1>
+            {resolved!.priceLabel ? <p className={styles.productPrice}>{resolved!.priceLabel}</p> : null}
 
-            <hr className="zara-divider" />
+            <hr className={styles.divider} />
 
-            {resolved!.sku ? <p className="zara-product-meta">SKU {resolved!.sku}</p> : null}
+            {resolved!.sku ? <p className={styles.productMeta}>SKU {resolved!.sku}</p> : null}
 
-            {/* Size picker — only shown when product has size variants */}
             {hasVariants && (
-              <div className="pdp-size-picker">
-                <p className="pdp-size-label">SIZE</p>
-                <div className="pdp-size-options">
+              <div className={styles.sizePicker}>
+                <p className={styles.sizeLabel}>SIZE</p>
+                <div className={styles.sizeOptions}>
                   {variants.map((v) => (
                     <button
                       key={v.id}
                       type="button"
-                      className={`pdp-size-btn${selectedVariantId === v.id ? ' is-selected' : ''}${v.stock_quantity === 0 ? ' is-sold-out' : ''}`}
+                      className={`${styles.sizeButton}${selectedVariantId === v.id ? ` ${styles.selected}` : ''}${v.stock_quantity === 0 ? ` ${styles.soldOut}` : ''}`}
                       disabled={v.stock_quantity === 0}
                       aria-pressed={selectedVariantId === v.id}
                       aria-label={`Size ${v.name}${v.stock_quantity === 0 ? ', sold out' : ''}`}
@@ -244,7 +243,7 @@ export function ProductPage() {
 
             <button
               type="button"
-              className="zara-add-btn"
+              className={styles.addButton}
               disabled={addDisabled}
               aria-describedby={addHint ? 'pdp-add-hint' : undefined}
               title={addHint}
@@ -256,21 +255,21 @@ export function ProductPage() {
               {addLabel}
             </button>
             {addHint ? (
-              <p id="pdp-add-hint" className="zara-product-meta" style={{ marginTop: '8px' }}>
+              <p id="pdp-add-hint" className={styles.productMeta} style={{ marginTop: '8px' }}>
                 {addHint}
               </p>
             ) : null}
             {addError ? (
-              <p className="zara-product-meta" style={{ marginTop: '8px', color: '#a00' }}>
+              <p className={styles.productMeta} style={{ marginTop: '8px', color: '#a00' }}>
                 {addError}
               </p>
             ) : null}
 
-            <div className="zara-product-description">
+            <div className={styles.productDescription}>
               <p>{resolved!.description}</p>
             </div>
 
-            <div className="zara-expandable-section">
+            <div className={styles.expandableSection}>
               <button>LENGKAPI TAMPILAN</button>
               <button>UKURAN PRODUK</button>
               <button>KOMPOSISI, PERAWATAN &amp; ASAL</button>

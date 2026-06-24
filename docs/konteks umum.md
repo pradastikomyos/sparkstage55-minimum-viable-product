@@ -1,12 +1,12 @@
-# Konteks Umum Proyek Skripsi
+# Konteks Umum Proyek
 
-Dokumen ini mencatat konteks awal untuk proyek dummy skripsi berbasis clone Prada.com yang nantinya akan diarahkan menjadi Spark Stage commerce experience. Tujuannya agar scope, alasan teknis, dan alasan akademik tetap konsisten selama pengembangan.
+Dokumen ini mencatat konteks awal untuk build Spark Stage commerce experience berbasis referensi visual Prada.com. Tujuannya agar scope, alasan teknis, dan alasan bisnis tetap konsisten selama pengembangan.
 
 ## Latar Belakang
 
 Spark Stage 55 adalah website live yang sudah dikembangkan sendiri oleh pemilik proyek, dari fase development sampai optimization dan refactoring. Website tersebut sudah digunakan oleh real user dan memiliki fitur produksi yang berjalan, termasuk autentikasi, booking, e-commerce, dan payment gateway.
 
-Namun untuk kebutuhan sempro, semhas, dan skripsi, memakai repository asli Spark Stage secara langsung berisiko membuat scope terlalu luas dan sulit dijelaskan. Spark Stage saat ini bersifat "palugada", mencakup banyak lini:
+Namun memakai repository asli Spark Stage secara langsung berisiko membuat scope terlalu luas dan sulit dijelaskan. Spark Stage saat ini bersifat "palugada", mencakup banyak lini:
 
 - Booking tiket untuk photo studio / stage experience.
 - Penjualan produk seperti baju, bracelets, charm/accessories, glasses, makeup, dan merchandise.
@@ -16,34 +16,34 @@ Namun untuk kebutuhan sempro, semhas, dan skripsi, memakai repository asli Spark
 - Integrasi DOKU live production.
 - Banyak edge case bisnis yang sudah berjalan di produksi.
 
-Karena scope tersebut terlalu kompleks untuk narasi skripsi Sistem Informasi, proyek di folder ini diposisikan sebagai **dummy/prototype skripsi**. Clone Prada.com dipakai sebagai titik awal visual untuk membuat pengalaman toko fashion yang lebih fokus, premium, dan mudah dipahami dosen.
+Karena scope tersebut terlalu kompleks untuk satu build commerce yang fokus, proyek di folder ini diposisikan sebagai **focused Spark Stage fashion commerce build**. Referensi Prada.com dipakai sebagai titik awal visual untuk membuat pengalaman toko fashion yang lebih fokus, premium, dan mudah dipahami.
 
 ## Posisi Proyek Ini
 
-Repository ini bukan clone final Spark Stage production. Repository ini adalah tempat membangun versi dummy yang lebih terkunci scopenya:
+Repository ini bukan clone final Spark Stage production. Repository ini adalah tempat membangun versi commerce yang lebih terkunci scopenya:
 
 - Fokus ke **toko jualan baju / fashion commerce**.
 - Target pengguna: **Gen Z**.
 - Brand akhir akan diganti menjadi **Spark Stage** menggunakan aset logo Spark Stage yang sudah tersedia.
 - Referensi visual awal memakai Prada.com karena cocok dengan arah premium fashion.
-- Fitur booking photo studio tidak masuk scope utama skripsi.
+- Fitur booking photo studio tidak masuk scope utama.
 - Fitur jualan produk dibuat lebih jelas sebagai fashion store, bukan bisnis campuran.
 
-Dengan pendekatan ini, skripsi bisa dijelaskan sebagai sistem e-commerce fashion dengan payment gateway, bukan platform hybrid yang mencampur booking experience, event, makeup/glam, accessories, dan merchandise sekaligus.
+Dengan pendekatan ini, proyek bisa dijelaskan sebagai sistem e-commerce fashion dengan payment gateway, bukan platform hybrid yang mencampur booking experience, event, makeup/glam, accessories, dan merchandise sekaligus.
 
 ## Alasan Tidak Menggunakan Fork Repo Spark Production
 
-Tidak memakai clone/fork repo Spark production untuk skripsi karena:
+Tidak memakai clone/fork repo Spark production karena:
 
 - Perlu menyembunyikan terlalu banyak fitur yang tidak masuk batas masalah.
 - Linked Supabase production akan lebih ribet dan berisiko.
-- Banyak logic production yang tidak perlu dibahas di skripsi.
-- Scope Spark asli terlalu luas sehingga bisa membingungkan dosen.
-- Dummy project memberi ruang untuk membuat batas masalah yang lebih bersih.
+- Banyak logic production yang tidak perlu masuk build ini.
+- Scope Spark asli terlalu luas sehingga bisa membingungkan target evaluasi.
+- Build terpisah memberi ruang untuk membuat batas masalah yang lebih bersih.
 
 Repo ini menjadi cara untuk membangun ulang bagian yang relevan saja dengan narasi akademik yang lebih fokus.
 
-## Scope Skripsi Yang Diusulkan
+## Scope Yang Diusulkan
 
 Judul/tema dapat diarahkan ke:
 
@@ -59,7 +59,7 @@ Batas masalah:
 - Tidak membahas semua kategori Spark production.
 - Fulfillment memakai BOPIS: buy online, pick up in store.
 - Tidak membahas pengiriman kurir/shipping karena pada pengalaman production izin dan operasional kurir membutuhkan waktu lebih panjang, sehingga dipotong dari scope development.
-- Payment gateway memakai DOKU sandbox untuk demo akademik.
+- Payment gateway memakai DOKU sandbox untuk testing dan validasi integrasi.
 - Admin panel dibuat minimal untuk produk, stok, dan verifikasi pickup order.
 
 ## Justifikasi Bisnis
@@ -72,7 +72,7 @@ Alasan website sendiri tetap sah walaupun marketplace seperti Tokopedia/Shopee t
 - Bisnis dapat mengintegrasikan payment gateway langsung.
 - Website dibuat sebagai sistem yang dibayar/dibutuhkan oleh pihak bisnis, bukan sekadar alternatif marketplace tanpa alasan.
 
-Untuk skripsi jurusan Sistem Informasi, urgency dapat dibingkai sebagai kebutuhan bisnis fashion lokal untuk memiliki kanal penjualan digital yang lebih terkontrol, branded, dan sesuai target Gen Z.
+Urgency dapat dibingkai sebagai kebutuhan bisnis fashion lokal untuk memiliki kanal penjualan digital yang lebih terkontrol, branded, dan sesuai target Gen Z.
 
 ## Tech Stack Spark Production
 
@@ -221,13 +221,13 @@ URL `/cart` redirect ke `/login`, sehingga cart termasuk route yang diproteksi a
 
 ### BOPIS / Pickup Order Behavior
 
-Scope fulfillment yang dipakai untuk skripsi adalah **BOPIS (buy online, pick up in store)**. Flow ini mengikuti keputusan development Spark production: user membeli produk secara online, masuk ke cart, membayar melalui DOKU, lalu mengambil barang langsung di store.
+Scope fulfillment yang dipakai adalah **BOPIS (buy online, pick up in store)**. Flow ini mengikuti keputusan development Spark production: user membeli produk secara online, masuk ke cart, membayar melalui DOKU, lalu mengambil barang langsung di store.
 
 Alasan BOPIS dipilih:
 
 - Tidak perlu integrasi kurir.
 - Tidak perlu membahas izin/operasional shipping yang memakan waktu.
-- Lebih sederhana untuk batas masalah skripsi.
+- Lebih sederhana untuk batas masalah produk.
 - Tetap merepresentasikan transaksi e-commerce nyata.
 - Cocok untuk bisnis yang punya lokasi fisik dan promosi utama lewat Instagram/direct link.
 
@@ -251,7 +251,7 @@ Contoh pattern dari Spark production:
 - Produk memiliki kode/SKU seperti `GLS034`.
 - Saat admin add/edit product, kode produk/SKU/slug dapat dibuat otomatis atau dikelola sebagai identifier produk.
 
-Untuk skripsi, istilah yang bisa dipakai:
+Istilah yang bisa dipakai:
 
 - `product_sku`: kode produk atau SKU, contoh `PROD-01`, `GLS034`.
 - `product_slug`: slug URL produk, contoh `the-sweetheart-oval-frames-gls034`.
@@ -260,18 +260,18 @@ Untuk skripsi, istilah yang bisa dipakai:
 
 Shipping/kurir tidak masuk scope awal. Jika dosen bertanya, jawabannya: sistem fokus pada BOPIS karena bisnis memiliki titik pengambilan fisik, mengurangi biaya/fee operasional, menghindari kompleksitas izin kurir, dan tetap mendukung transaksi online yang valid.
 
-## Relevansi Untuk Dummy Skripsi
+## Relevansi Untuk Build Ini
 
-Spark production sudah membuktikan bahwa fitur real-world seperti OAuth, Supabase, DOKU, cart, booking, dan product catalog dapat berjalan. Namun dummy skripsi perlu dibuat lebih sempit:
+Spark production sudah membuktikan bahwa fitur real-world seperti OAuth, Supabase, DOKU, cart, booking, dan product catalog dapat berjalan. Namun build ini perlu dibuat lebih sempit:
 
 - Dari Spark multi-purpose experience menjadi Spark fashion commerce.
 - Dari booking + shop + event menjadi shop-first.
 - Dari produk campuran menjadi fashion/clothing.
-- Dari production complexity menjadi academic demonstrable system.
+- Dari production complexity menjadi commerce system yang mudah dievaluasi.
 
-Clone Prada dipakai sebagai alat untuk membangun visual direction premium, sementara logic bisnis akan disederhanakan agar sesuai batas masalah skripsi.
+Referensi Prada dipakai sebagai alat untuk membangun visual direction premium, sementara logic bisnis disederhanakan agar sesuai batas masalah produk.
 
-## Narasi Yang Bisa Dipakai Ke Dosen
+## Narasi Produk
 
 Spark Stage membutuhkan website e-commerce fashion yang dapat menampilkan katalog produk secara premium, memudahkan pembelian online, dan mengintegrasikan pembayaran digital melalui payment gateway DOKU. Website ini ditujukan untuk pengguna Gen Z yang terbiasa dengan pengalaman visual kuat, responsif, dan mobile-friendly.
 
@@ -291,7 +291,7 @@ Fitur booking photo studio, event, produk non-fashion, dan pengiriman kurir tida
 
 ## Catatan Arah Implementasi
 
-Untuk versi dummy skripsi:
+Untuk versi focused build:
 
 - Ganti logo Prada menjadi Spark Stage.
 - Gunakan aset Spark Stage yang sudah dimiliki.
@@ -301,7 +301,7 @@ Untuk versi dummy skripsi:
 - Gunakan flow BOPIS, bukan shipping/kurir.
 - Generate SKU/slug produk dan pickup code order secara sistematis.
 - Gunakan Supabase project terpisah dari production.
-- Hindari membawa semua logic Spark production ke dummy.
+- Hindari membawa semua logic Spark production ke build ini.
 - Dokumentasikan batas masalah sejak awal.
 
 ## Risiko Scope Creep
@@ -329,6 +329,6 @@ Jika waktu masih ada, fitur tambahan yang paling masuk akal:
 
 ## Kesimpulan Konteks
 
-Project ini adalah jembatan antara pengalaman nyata membangun Spark Stage production dan kebutuhan akademik untuk membuat sistem yang lebih fokus. Arah paling kuat adalah membuat dummy Spark Stage fashion commerce dengan visual premium seperti Prada, backend Supabase, dan payment gateway DOKU sandbox.
+Project ini adalah jembatan antara pengalaman nyata membangun Spark Stage production dan kebutuhan membuat sistem commerce yang lebih fokus. Arah paling kuat adalah membuat Spark Stage fashion commerce dengan visual premium seperti Prada, backend Supabase, dan payment gateway DOKU sandbox.
 
 Kunci narasi: bukan membuat marketplace umum, tetapi membuat kanal e-commerce branded untuk bisnis fashion yang membutuhkan kontrol pengalaman, data, dan pembayaran.

@@ -1,0 +1,37 @@
+.container {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 32px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.tab {
+  background: none;
+  border: 0;
+  padding: 12px 0;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  color: #888;
+  position: relative;
+  transition: color 0.2s;
+}
+
+.tab:hover {
+  color: #000;
+}
+
+.active {
+  color: #000;
+}
+
+.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #000;
+}

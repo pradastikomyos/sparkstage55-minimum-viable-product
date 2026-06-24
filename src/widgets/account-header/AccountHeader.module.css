@@ -1,0 +1,105 @@
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 72px;
+  padding: 0 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+  z-index: var(--z-header, 1100);
+  border-bottom: 1px solid transparent;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 28px;
+  color: #000;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.backLink:hover {
+  opacity: 0.55;
+}
+
+.backIcon {
+  width: 28px;
+  height: 16px;
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+}
+
+.logoLink {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  z-index: 1;
+}
+
+.logoImage {
+  height: 28px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+}
+
+.menuButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  transition: opacity 0.2s;
+}
+
+.menuButton:hover {
+  opacity: 0.55;
+}
+
+.menuButton span {
+  display: block;
+  width: 24px;
+  height: 1px;
+  background: #000;
+}
+
+.searchButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 300;
+  color: #000;
+  text-transform: uppercase;
+  border-bottom: 1px solid #000;
+  padding-bottom: 2px;
+  letter-spacing: 0.04em;
+  transition: opacity 0.2s;
+}
+
+.searchButton:hover {
+  opacity: 0.55;
+}
+
+@media (max-width: 900px) {
+  .logoImage {
+    height: 22px;
+  }
+}

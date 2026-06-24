@@ -1,5 +1,6 @@
 import { requireSupabaseClient } from '../lib/supabase';
 import { AdminOrder, OrderStatus, PaymentStatus } from '../types/commerce';
+import type { PickupCodeLike } from '../utils/orderHelpers';
 
 export type CheckoutResultOrder = {
   id: string;
@@ -11,11 +12,7 @@ export type CheckoutResultOrder = {
   total_amount_idr: number;
   paid_at: string | null;
   created_at: string;
-  pickup_codes: Array<{
-    code: string;
-    qr_payload: string;
-    verified_at: string | null;
-  }> | null;
+  pickup_codes: PickupCodeLike[] | PickupCodeLike | null;
   order_items: Array<{
     product_name: string;
     sku: string;

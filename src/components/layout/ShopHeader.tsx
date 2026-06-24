@@ -24,7 +24,6 @@ export function ShopHeader() {
         <Link to="/" aria-label="Spark Stage home"><BrandLogo /></Link>
       </div>
       <div className="shop-header-right">
-        <span className="shop-demo-badge">Mode demo</span>
         <UserHeaderActions />
         <CartHeaderButton className="shop-header-link" />
       </div>

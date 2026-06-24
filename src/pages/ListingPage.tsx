@@ -206,7 +206,7 @@ export function ListingPage({ kind }: { kind: ListingKind }) {
         ) : showEmptyCatalog ? (
           <CatalogState
             title={`Belum ada produk ${isMen ? 'pria' : 'wanita'} terbaru`}
-            message={`Tambahkan produk aktif ke ${LISTING_CATEGORY[kind]} sebelum demo.`}
+            message={`Tambahkan produk aktif ke ${LISTING_CATEGORY[kind]}.`}
           />
         ) : (
           <section className="prada-product-grid">

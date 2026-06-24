@@ -102,8 +102,6 @@ export function AdminSidebar({
         <span>Total stock available</span>
       </div>
 
-      <div className="admin-demo-badge">Mode demo</div>
-
       <button className="admin-support-link" type="button" onClick={onSignOut}>
         <span><AdminIcon icon={Logout03Icon} size={19} /> Sign out</span>
       </button>

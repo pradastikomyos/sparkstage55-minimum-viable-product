@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { BrandLogo } from '../../components/ui/BrandLogo';
 import type { CheckoutResultOrder } from '../../services/orders';
 import type { CheckoutResultResponse } from '../../services/checkout';
+import { getFirstPickupCode } from '../../utils/orderHelpers';
 import { CheckoutSuccessView } from './CheckoutSuccessView';
 import { RotatingPendingMessage } from './RotatingPendingMessage';
 import { StatusIcon } from './StatusIcon';
@@ -160,7 +161,7 @@ export function CheckoutResultContent({
         {isSuccess && order && (
           <CheckoutSuccessView
             order={order}
-            pickupCode={order.status === 'pending_pickup' ? order.pickup_codes?.[0] ?? null : null}
+            pickupCode={order.status === 'pending_pickup' ? getFirstPickupCode(order.pickup_codes) : null}
           />
         )}
 

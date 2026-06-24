@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import QRCode from 'qrcode';
-import { normalizeQrPayload } from '../../utils/orderHelpers';
+import { normalizeQrPayload, type PickupCodeLike } from '../../utils/orderHelpers';
 import type { CheckoutResultOrder } from '../../services/orders';
 import { AnimatedCheckmark } from './StatusIcon';
 
@@ -31,7 +31,7 @@ export function CheckoutSuccessView({
   pickupCode,
 }: {
   order: CheckoutResultOrder;
-  pickupCode: { code: string; qr_payload: string } | null;
+  pickupCode: PickupCodeLike | null;
 }) {
   const isPickedUp = order.status === 'picked_up';
 

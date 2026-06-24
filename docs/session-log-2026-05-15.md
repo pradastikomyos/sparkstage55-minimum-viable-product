@@ -86,7 +86,7 @@ Sesi lanjutan dari 14 Mei. Fokus: CMS Sprint B, mobile responsiveness admin, pol
 | `InventorySection.tsx` | Form stok default | 10 | 0 |
 | `InventorySection.tsx` | `pendingPickupCount` | Hardcode `0` | Fetch dari orders query |
 | `AdminProductListPane.tsx` | Greeting | "Good Morning, Admin" | Time-aware (Pagi/Siang/Sore/Malam) |
-| `DokuSection.tsx` | Demo customer | `Spark Demo Customer / demo@sparkstage.local` | Kosong |
+| `DokuSection.tsx` | Sandbox customer | `Spark Sandbox Customer / checkout@sparkstage.local` | Kosong |
 
 ### 5. Manual Input Fallback Verification
 
@@ -163,5 +163,5 @@ Redesign halaman detail order:
 | Webhook DOKU direct test (tanpa reconcile fallback) | MEDIUM | Semua test pakai auto-reconcile, webhook path belum dikonfirmasi langsung |
 | Filter/sort di ListingPage | LOW | UI ada tapi tidak berfungsi |
 | ProductFormCard — field description, category selector | LOW | Form tambah produk masih minimal |
-| Login SSO (Google/Apple) | LOW | Placeholder, tidak fungsional |
+| Login SSO (Google/Apple) | LOW | Belum masuk flow utama |
 | CORS wildcard di edge functions | LOW | Fine untuk sandbox, perlu restrict untuk production |

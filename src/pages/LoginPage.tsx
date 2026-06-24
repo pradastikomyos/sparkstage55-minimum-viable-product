@@ -128,10 +128,6 @@ export function LoginPage() {
               }}>{isSignup ? 'Masuk' : 'Daftar'}</button>
             </p>
           </form>
-          <div className="divider"><span>AKSES DENGAN</span></div>
-          <p className="sso-disclaimer">Login sosial belum tersedia untuk demo ini.</p>
-          <button className="btn-sso" type="button" disabled aria-disabled="true" title="Segera hadir">LANJUTKAN DENGAN GOOGLE</button>
-          <button className="btn-sso" type="button" disabled aria-disabled="true" title="Segera hadir">LANJUTKAN DENGAN APPLE</button>
         </main>
         <footer className="login-help"><button type="button" className="inline-link is-placeholder" aria-disabled="true" data-ui="placeholder">HELP</button></footer>
       </div>

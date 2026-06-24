@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "supabase:projects": "supabase projects list",
     "supabase:link": "supabase link",
-    "supabase:status": "supabase status"
+    "supabase:status": "supabase status",
+    "check:architecture": "node scripts/check-css-architecture.mjs"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.0",

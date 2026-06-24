@@ -2,7 +2,7 @@
  * OrdersSection — self-contained admin page for order management.
  *
  * Owns:
- *  - orders TanStack Query (auto-refreshes every 30s for BOPIS demo)
+ *  - orders TanStack Query (auto-refreshes every 15s for BOPIS operations)
  *  - activeTab state (default: 'pending_pickup' — most actionable)
  *  - selectedOrderId state
  *

@@ -1,15 +1,15 @@
-# Tech Stack Skripsi: Spark Stage Fashion Commerce
+# Tech Stack: Spark Stage Fashion Commerce
 
 Tanggal revisi: 7 Mei 2026  
-Konteks: dummy project skripsi berbasis visual clone Prada.com yang nantinya diarahkan menjadi Spark Stage fashion commerce. Fokus sistem adalah katalog fashion, cart, checkout, payment gateway DOKU sandbox, BOPIS (buy online, pick up in store), dan backend Supabase. Kanal promosi utama Spark Stage adalah Instagram/social media, sehingga mobile experience, visual quality, fast interaction, dan social sharing lebih prioritas daripada SEO kompleks.
+Konteks: Spark Stage fashion commerce berbasis referensi visual Prada.com. Fokus sistem adalah katalog fashion, cart, checkout, payment gateway DOKU sandbox, BOPIS (buy online, pick up in store), dan backend Supabase. Kanal promosi utama Spark Stage adalah Instagram/social media, sehingga mobile experience, visual quality, fast interaction, dan social sharing lebih prioritas daripada SEO kompleks.
 
 ## Executive Recommendation
 
-Gunakan **React + TypeScript + Vite** sebagai stack utama skripsi.
+Gunakan **React + TypeScript + Vite** sebagai stack utama.
 
 Alasan utamanya bukan sekadar preferensi. Stack ini sudah terbukti di project Spark Stage production yang live, punya real user, memakai Supabase, Google OAuth, DOKU Checkout production, webhook, sync/reconciliation, dan edge cases yang sudah dirapikan.
 
-Next.js tetap layak disebut sebagai alternatif, terutama untuk SSR/SEO/server routing. Namun untuk skripsi ini, biaya migrasi dan risiko rework lebih besar daripada manfaatnya. Karena target promosi utama adalah Instagram dan direct/social links, kebutuhan utama bukan organic SEO yang berat, melainkan:
+Next.js tetap layak disebut sebagai alternatif, terutama untuk SSR/SEO/server routing. Namun untuk build ini, biaya migrasi dan risiko rework lebih besar daripada manfaatnya. Karena target promosi utama adalah Instagram dan direct/social links, kebutuhan utama bukan organic SEO yang berat, melainkan:
 
 - mobile-first loading dari in-app browser;
 - visual premium dan responsive fluid UI;
@@ -53,7 +53,7 @@ Struktur utama Spark production:
 - `scripts/`: migration/audit/helper scripts
 - `docs/`: architecture, runbooks, decisions, migration notes
 
-## Recommended Stack Untuk Skripsi
+## Recommended Stack
 
 | Area | Rekomendasi |
 |---|---|
@@ -70,7 +70,7 @@ Struktur utama Spark production:
 | Payment | DOKU Checkout sandbox + webhook |
 | Fulfillment | BOPIS / pickup in store |
 | QR/Pickup verification | QR code + pickup code verified by admin |
-| Media | Local assets for prototype, ImageKit/R2 optional later |
+| Media | Local assets, ImageKit/R2 optional later |
 | Forms/validation | React Hook Form + Zod if form complexity grows |
 | Motion | Framer Motion or CSS transitions, used sparingly |
 | Icons | lucide-react |
@@ -93,7 +93,7 @@ prada-clone/
 
 Root `package.json` hanya menjadi entrypoint command lint/build/test/dev. Aplikasi utama tetap berada di `frontend/`, sedangkan Supabase tetap berada di root agar struktur backend mudah dipahami dan selaras dengan Supabase CLI.
 
-Admin feature seperti tambah produk, stok, daftar order, dan scan BOPIS tidak perlu dipisah menjadi aplikasi baru pada fase skripsi. Admin cukup menjadi protected route/module di dalam frontend yang sama:
+Admin feature seperti tambah produk, stok, daftar order, dan scan BOPIS tidak perlu dipisah menjadi aplikasi baru pada fase awal. Admin cukup menjadi protected route/module di dalam frontend yang sama:
 
 ```txt
 frontend/src/routes/admin/
@@ -105,26 +105,26 @@ frontend/src/routes/admin/
 Alasannya:
 
 - admin dan customer memakai domain, auth, Supabase client, design system, dan data model yang sama;
-- scope admin skripsi masih terbatas pada produk, stok, order, dan pickup verification;
+- scope admin masih terbatas pada produk, stok, order, dan pickup verification;
 - Supabase RLS serta role admin cukup untuk memisahkan akses;
-- satu frontend lebih mudah diuji dan didemo untuk semhas/skripsi;
+- satu frontend lebih mudah diuji dan divalidasi end-to-end;
 - memisahkan `apps/web` dan `apps/admin` sekarang akan menambah overhead deployment, env, auth sharing, dan routing sebelum manfaatnya terasa.
 
 Struktur dapat berkembang menjadi `apps/web`, `apps/admin`, dan `packages/*` jika admin panel menjadi besar, butuh subdomain/deployment terpisah, atau shared UI/types/validators mulai banyak.
 
-## Why React + Vite Fits This Skripsi
+## Why React + Vite Fits This Build
 
-React + Vite is the pragmatic choice because it aligns with existing production experience. The strongest academic argument is not "Vite is easier", but:
+React + Vite is the pragmatic choice because it aligns with existing production experience. The strongest technical argument is not "Vite is easier", but:
 
 - The stack has already been validated in a live Spark Stage system.
-- Development speed is high, which matters for iterative UI and skripsi deadlines.
+- Development speed is high, which matters for iterative UI and product deadlines.
 - Hot reload and Vite DX are useful for polishing premium responsive UI.
 - Supabase Edge Functions provide the required backend boundary for payment secrets.
 - DOKU integration does not require Next.js; secrets and signatures can live in Edge Functions.
 - The system can still implement SEO basics through metadata, sitemap, robots, Open Graph tags, and Google Search Console.
 - The main acquisition channel is Instagram/social media, so UX from social links is more important than advanced SSR.
 
-This gives a clean story: the thesis system is built with a stack that is already proven in production, then scoped down into a clearer fashion-commerce case study.
+This gives a clean story: the system is built with a stack that is already proven in production, then scoped down into a clearer fashion-commerce case study.
 
 ## Where Next.js Is Still Better
 
@@ -139,7 +139,7 @@ Next.js remains technically stronger for:
 
 If this project were started from zero with SEO as the primary acquisition channel, Next.js would be a strong recommendation. But for this case, the user acquisition story is social-first, and the production proof already sits on React + Vite.
 
-## Decision: Why Not Next.js For The Main Skripsi Build
+## Decision: Why Not Next.js For The Main Build
 
 Next.js is not rejected because it is bad. It is rejected for this phase because:
 
@@ -148,9 +148,9 @@ Next.js is not rejected because it is bad. It is rejected for this phase because
 - Supabase SSR patterns require additional care.
 - DOKU can already be handled safely by Supabase Edge Functions.
 - The existing Spark production stack gives stronger continuity and credibility.
-- Skripsi risk should be reduced, not increased.
+- Delivery risk should be reduced, not increased.
 
-Suggested academic wording:
+Suggested architecture wording:
 
 > Next.js memiliki keunggulan pada SSR dan SEO, namun penelitian ini memprioritaskan pengembangan sistem e-commerce yang stabil, cepat dikembangkan, dan terintegrasi dengan BaaS serta payment gateway. React + Vite dipilih karena telah terbukti digunakan pada sistem Spark Stage production, mendukung pengembangan UI responsif secara cepat, dan tetap dapat memenuhi kebutuhan SEO dasar melalui metadata, sitemap, robots.txt, Open Graph tags, dan Google Search Console.
 
@@ -170,7 +170,7 @@ SEO is still relevant, but not the primary driver. Since Spark Stage promotion i
 - fast mobile loading;
 - image dimensions to avoid layout shift.
 
-This is enough for a defensible skripsi scope. Advanced SSR can be listed as future work.
+This is enough for a defensible product scope. Advanced SSR can be listed as future work.
 
 ## State Management Decision
 
@@ -193,7 +193,7 @@ Do not put source-of-truth product catalog, user profile, order, or payment stat
 
 ## Supabase Architecture
 
-Recommended tables for skripsi scope:
+Recommended tables for the current scope:
 
 - `profiles`
 - `products`
@@ -245,7 +245,7 @@ Reason:
 
 - It matches Spark production experience.
 - Hosted checkout reduces payment UI scope.
-- It is easier to demo in semhas.
+- It is easier to validate end-to-end.
 - BOPIS keeps fulfillment scope focused because no courier/shipping integration is needed.
 - Direct API can be listed as future improvement.
 
@@ -267,7 +267,7 @@ Suggested flow:
 14. Admin verifies order and hands over the product.
 15. System marks order as `picked_up` / `completed`.
 
-Out of scope for skripsi:
+Out of scope for the current build:
 
 - courier/shipping integration;
 - shipping address management;
@@ -352,7 +352,7 @@ docs/
 
 ## Migration From Current Prada Clone
 
-This repo remains useful as a visual prototype.
+This repo remains useful as a visual reference implementation.
 
 Recommended path:
 
@@ -368,6 +368,6 @@ Recommended path:
 
 ## Final Recommendation
 
-Use **React + TypeScript + Vite + TanStack Query + Supabase + DOKU Checkout sandbox + BOPIS pickup verification** for the skripsi implementation.
+Use **React + TypeScript + Vite + TanStack Query + Supabase + DOKU Checkout sandbox + BOPIS pickup verification** for the implementation.
 
 Next.js should be documented as a technically valid alternative with better SSR/SEO, but not chosen because the real Spark production system already proves the React + Vite stack, the promotion channel is social-first, and Supabase Edge Functions already solve the sensitive backend/payment boundary. Shipping/kurir should stay out of scope; BOPIS is enough to demonstrate a real online purchase and store pickup workflow.

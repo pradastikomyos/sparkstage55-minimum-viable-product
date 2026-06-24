@@ -1,9 +1,15 @@
 export type OrderCategory = 'pending' | 'active' | 'history';
 
+export type PickupCodeLike = {
+  code?: string | null;
+  qr_payload?: string | null;
+  verified_at?: string | null;
+};
+
 type OrderLike = {
   payment_status?: string | null;
   status?: string | null;
-  pickup_codes?: Array<{ code?: string | null; qr_payload?: string | null }> | { code?: string | null; qr_payload?: string | null } | null;
+  pickup_codes?: PickupCodeLike[] | PickupCodeLike | null;
 };
 
 const normalize = (value: string | null | undefined) => String(value || '').toLowerCase();
@@ -28,6 +34,11 @@ export function isPickupReady(order: OrderLike) {
       status === 'pending_pickup' &&
       hasCode,
   );
+}
+
+export function getFirstPickupCode(codes: PickupCodeLike[] | PickupCodeLike | null | undefined) {
+  if (codes == null) return null;
+  return Array.isArray(codes) ? (codes[0] ?? null) : codes;
 }
 
 /**

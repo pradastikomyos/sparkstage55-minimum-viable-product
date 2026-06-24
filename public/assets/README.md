@@ -4,7 +4,7 @@ This folder contains app-facing static assets served by Vite from `/assets/...`.
 
 ## Structure
 
-- `reference/`: curated reference assets used by the current Prada-style prototype.
+- `reference/`: curated reference assets used by the current Prada-style direction.
 - `harvested/`: raw captured assets from browser/network harvesting. This folder is ignored by git by default.
 
 ## Current Buckets Mapping

@@ -1,0 +1,1018 @@
+/* ── My Orders — Zara Editorial Minimalism ─────────────────────────── */
+
+@font-face {
+  font-family: 'Helvetica Now Text';
+  src: url('/fonts/helvetica-now/HelveticaNowText-Light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Helvetica Now Text';
+  src: url('/fonts/helvetica-now/HelveticaNowText-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+.my-orders-page {
+  font-family: 'Helvetica Now Text', Helvetica, Arial, sans-serif;
+  background: #fff;
+  color: #000;
+  height: 100vh;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+/* ── Header ──────────────────────────────────────────────────────── */
+
+.my-orders-page .zara-header,
+.order-detail-page .zara-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 72px;
+  padding: 0 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+  z-index: 1100;
+  border-bottom: 1px solid transparent;
+  pointer-events: auto;
+}
+
+.my-orders-page .zara-header-logo {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  z-index: 1;
+}
+
+.my-orders-page .zara-header-logo-img {
+  height: 28px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+}
+
+.my-orders-page .zara-menu-btn,
+.order-detail-page .zara-menu-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  transition: opacity 0.2s;
+}
+
+.my-orders-page .zara-menu-btn:hover,
+.order-detail-page .zara-menu-btn:hover { opacity: 0.55; }
+
+.my-orders-page .zara-menu-btn span,
+.order-detail-page .zara-menu-btn span {
+  display: block;
+  width: 24px;
+  height: 1px;
+  background: #000;
+}
+
+.my-orders-page .zara-back-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 28px;
+  color: #000;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.my-orders-page .zara-back-link:hover { opacity: 0.55; }
+
+.my-orders-page .zara-back-link__icon {
+  width: 28px;
+  height: 16px;
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+}
+
+.my-orders-page .zara-search-btn,
+.order-detail-page .zara-search-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 300;
+  color: #000;
+  text-transform: uppercase;
+  border-bottom: 1px solid #000;
+  padding-bottom: 2px;
+  letter-spacing: 0.04em;
+  transition: opacity 0.2s;
+}
+
+.my-orders-page .zara-search-btn:hover,
+.order-detail-page .zara-search-btn:hover { opacity: 0.55; }
+
+/* ── Body: 3-col fixed layout ─────────────────────────────────── */
+
+.zara-body {
+  position: fixed;
+  top: 72px;          /* below header — match .header height */
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: grid;
+  grid-template-columns: 220px 1fr 170px;
+  gap: 0;
+  padding: 0 32px;
+  background: #fff;
+}
+
+/* ── Left Sidebar — fixed, no scroll ─────────────────────────── */
+
+.zara-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 72px 32px 40px 16px;
+  height: 100%;
+  scrollbar-width: none;       /* hide scrollbar — FF */
+  position: relative;          /* container for absolute animated bullet */
+}
+
+.zara-sidebar::-webkit-scrollbar { display: none; } /* Chrome */
+
+.zara-sidebar-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.zara-sidebar-group-title {
+  font-size: 13px;
+  font-weight: 300;
+  color: #000;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+  border: none;
+  background: none;
+  text-align: left;
+  padding: 0;
+  cursor: pointer;
+  font-family: 'Helvetica Now Text', Helvetica, Arial, sans-serif;
+  letter-spacing: 0.02em;
+  line-height: 1.5;
+}
+
+.zara-sidebar-group-title.active {
+  font-weight: 400;
+}
+
+.zara-sidebar-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.zara-sidebar-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'Helvetica Now Text', Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 300;
+  color: #000;
+  text-align: left;
+  padding: 2px 0 2px 16px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  position: relative;
+  letter-spacing: 0.02em;
+}
+
+.zara-sidebar-link.active {
+  font-weight: 400;
+}
+
+.zara-sidebar-bullet-indicator {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: 10.2px;
+  color: #000;
+  line-height: 1;
+  pointer-events: none;
+  transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 10.2px;
+  height: 10.2px;
+}
+
+/* ── Sub-nav (Online filter items: Menunggu / Siap Diambil / Selesai) */
+
+.zara-subnav-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.35s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.25s ease, margin 0.25s ease;
+  position: relative;
+}
+
+.zara-subnav-links.expanded {
+  max-height: 150px;
+  opacity: 1;
+  margin: 4px 0 0 0;
+}
+
+.zara-subnav-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'Helvetica Now Text', Helvetica, Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 300;
+  color: #000;
+  text-align: left;
+  padding: 3px 0 3px 28px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+  position: relative;
+  letter-spacing: 0.02em;
+  width: 100%;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 4px;
+}
+
+.zara-subnav-link:hover { opacity: 0.6; }
+
+.zara-subnav-link.active {
+  font-weight: 500;
+}
+
+/* Animated dash indicator — smooth like the bullet • */
+.zara-subnav-dash-indicator {
+  position: absolute;
+  left: 16px;
+  top: 0;
+  font-size: 10px;
+  color: #000;
+  line-height: 1;
+  pointer-events: none;
+  transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.15s;
+  width: 10px;
+  height: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.zara-subnav-count {
+  color: #999;
+  font-size: 10px;
+  font-weight: 300;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.zara-sidebar-info {
+  font-size: 11px;
+  font-weight: 300;
+  color: #757575;
+  line-height: 1.5;
+  margin-top: 2px;
+  margin-bottom: 4px;
+  padding-left: 0;
+  max-width: 160px;
+}
+
+/* ── Center: independently scrollable ────────────────────────── */
+
+.zara-center-scroll {
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 100%;
+  padding: 0 32px;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,0,0,0.15) transparent;
+}
+
+.zara-center-scroll::-webkit-scrollbar { width: 4px; }
+.zara-center-scroll::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.15);
+  border-radius: 2px;
+}
+.zara-center-scroll::-webkit-scrollbar-track { background: transparent; }
+
+.zara-center-content {
+  padding-top: 72px;
+  min-height: 0;
+}
+
+/* ── Right Actions — fixed, no scroll ────────────────────────── */
+
+.zara-right-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+  text-align: right;
+  padding-top: 72px;
+  overflow: hidden;
+}
+
+.zara-right-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 300;
+  color: #000;
+  text-transform: uppercase;
+  padding: 4px 0;
+}
+
+.zara-right-btn.bold {
+  font-weight: 300;
+  letter-spacing: 0.02em;
+}
+
+.zara-right-username {
+  font-size: 13px;
+  font-weight: 500;
+  color: #000;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.zara-right-link {
+  font-size: 13px;
+  font-weight: 300;
+  color: #000;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+}
+
+/* ── Zara Tabs (Minimalist Bottom Border) ────────────────────────── */
+
+.zara-tabs-container {
+  display: flex;
+  gap: 24px;
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 24px;
+  padding-bottom: 8px;
+}
+
+.zara-tab-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  color: #757575;
+  text-transform: uppercase;
+  font-weight: 300;
+  padding: 4px 0;
+  position: relative;
+}
+
+.zara-tab-button.active {
+  color: #000;
+  font-weight: 500;
+}
+
+.zara-tab-button.active::after {
+  content: '';
+  position: absolute;
+  bottom: -9px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #000;
+}
+
+/* ── Empty State ─────────────────────────────────────────────────── */
+
+.zara-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 20px 0 40px;
+  color: #000;
+}
+
+.zara-empty-icon {
+  margin-bottom: 16px;
+  color: #000;
+  opacity: 0.85;
+}
+
+.zara-empty-text {
+  font-size: 11px;
+  font-weight: 300;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #000;
+}
+
+/* ── Order Card (Zara styling) ───────────────────────────────────── */
+
+.my-orders-card {
+  padding: 24px 0;
+  border-bottom: 1px solid #000;
+  background: #fff;
+  border-radius: 0;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.my-orders-card:first-child {
+  border-top: 1px solid #000;
+}
+
+.my-orders-card__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.my-orders-card__eyebrow {
+  font-size: 10px;
+  text-transform: uppercase;
+  color: #757575;
+  margin: 0 0 4px 0;
+}
+
+.my-orders-card__invoice {
+  font-size: 14px;
+  font-weight: 500;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.my-orders-card__customer {
+  font-size: 13px;
+  color: #757575;
+  margin: 4px 0 0 0;
+}
+
+.my-orders-card__status {
+  font-size: 12px;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: #000;
+}
+
+.my-orders-card__meta-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.my-orders-card__meta-grid p {
+  font-size: 13px;
+  color: #000;
+  margin: 0;
+}
+
+.my-orders-card__meta-grid span {
+  display: block;
+  font-size: 10px;
+  text-transform: uppercase;
+  color: #757575;
+  margin-bottom: 4px;
+}
+
+.my-orders-card__qr-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-top: 12px;
+  padding: 16px 0;
+  border-top: 1px dashed #e0e0e0;
+}
+
+.my-orders-card__qr-box {
+  padding: 8px;
+  border: 1px solid #000;
+  background: #fff;
+}
+
+.my-orders-card__qr-box canvas {
+  display: block;
+}
+
+.my-orders-card__pickup-code {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  margin: 4px 0 0 0;
+}
+
+.my-orders-card__actions {
+  margin-top: 8px;
+}
+
+.my-orders-card__button {
+  display: inline-block;
+  padding: 10px 24px;
+  border: 1px solid #000;
+  background: transparent;
+  color: #000;
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 300;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.my-orders-card__button:hover {
+  background: #000;
+  color: #fff;
+}
+
+/* ── User Details & Settings Panels ───────────────────────────────── */
+
+.zara-details-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 480px;
+  margin-top: 8px;
+}
+
+.zara-details-row {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.zara-details-label {
+  font-size: 13px;
+  color: #757575;
+  text-transform: uppercase;
+}
+
+.zara-details-value {
+  font-size: 13px;
+  color: #000;
+  font-weight: 500;
+}
+
+.zara-settings-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 320px;
+  margin-top: 8px;
+}
+
+.zara-btn-black {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  background: #000;
+  color: #fff;
+  border: none;
+  font-size: 12px;
+  text-transform: uppercase;
+  text-align: center;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.zara-btn-black:hover {
+  opacity: 0.8;
+}
+
+/* ── Skeleton Styling ────────────────────────────────────────────── */
+
+.admin-skeleton {
+  background: #ebebeb;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+/* ── Zara Footer Styles ──────────────────────────────────────────── */
+
+.zara-footer {
+  margin-top: 80px;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 60px;
+  padding-bottom: 48px;
+  font-family: inherit;
+}
+
+.zara-footer-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 40px;
+}
+
+.zara-footer-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.zara-footer-col-title {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  color: #000;
+}
+
+.zara-footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.zara-footer-link {
+  font-size: 11px;
+  font-weight: 300;
+  color: #000;
+  text-transform: uppercase;
+  text-decoration: none;
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.zara-footer-link:hover {
+  text-decoration: underline;
+}
+
+.zara-footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 80px;
+  padding: 20px 0;
+  border-top: 1px solid #e0e0e0;
+  font-size: 11px;
+  font-weight: 300;
+  text-transform: uppercase;
+  color: #000;
+  letter-spacing: 0.02em;
+}
+
+.zara-footer-bottom-langs {
+  display: flex;
+  gap: 16px;
+}
+
+.zara-footer-bottom-langs span {
+  cursor: pointer;
+}
+
+.zara-footer-bottom-langs span.active {
+  font-weight: 500;
+}
+
+/* ── Responsive ────────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .my-orders-page {
+    height: auto;
+    overflow: visible;
+  }
+  .zara-body {
+    position: static;
+    display: flex;
+    flex-direction: column;
+    padding: 72px 16px 0;
+  }
+  .zara-sidebar {
+    height: auto;
+    overflow: visible;
+    padding: 24px 0 16px;
+  }
+  .zara-center-scroll {
+    height: auto;
+    overflow: visible;
+    padding: 0;
+  }
+  .zara-center-content {
+    padding-top: 16px;
+  }
+  .zara-right-actions {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    text-align: left;
+    padding-top: 0;
+    padding-bottom: 16px;
+    border-top: 1px solid #e0e0e0;
+    order: -1; /* show account info first on mobile */
+  }
+  .zara-header-logo-img {
+    height: 22px;
+  }
+  .my-orders-card__meta-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .zara-footer {
+    margin-top: 48px;
+    padding-top: 40px;
+    padding-bottom: 32px;
+  }
+  .zara-footer-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .zara-footer-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    margin-top: 32px;
+  }
+}
+
+/* ── Zara Order Detail Styles ────────────────────────────────────── */
+
+.order-detail-page {
+  font-family: "Helvetica Now Text", "GT-America Standard", Helvetica, Arial, sans-serif;
+  background: #fff;
+  color: #000;
+  min-height: 100vh;
+  padding: 32px 32px 80px;
+  -webkit-font-smoothing: antialiased;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.order-detail-shell {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+.order-detail-header {
+  border-bottom: 1px solid #000;
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.order-detail-eyebrow {
+  font-size: 10px;
+  text-transform: uppercase;
+  color: #757575;
+  margin-bottom: 4px;
+}
+
+.order-detail-invoice {
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.order-detail-back {
+  font-size: 13px;
+  text-transform: uppercase;
+  color: #000;
+  text-decoration: none;
+  border-bottom: 1px solid #000;
+  padding-bottom: 2px;
+}
+
+.order-detail-body {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 32px;
+  align-items: start;
+}
+
+.order-detail-main {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.order-detail-card {
+  padding: 24px 0;
+  border-bottom: 1px solid #000;
+  background: #fff;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.order-detail-card:first-child {
+  border-top: 1px solid #000;
+}
+
+.order-detail-card-title {
+  font-size: 13px;
+  text-transform: uppercase;
+  font-weight: 500;
+  margin-bottom: 20px;
+  color: #000;
+}
+
+.order-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px 32px;
+}
+
+.order-detail-field-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  color: #757575;
+  margin-bottom: 4px;
+}
+
+.order-detail-field-value {
+  font-size: 13px;
+  color: #000;
+  margin: 0;
+}
+
+.order-detail-field-value--status {
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.order-detail-items {
+  display: flex;
+  flex-direction: column;
+}
+
+.order-detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 16px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.order-detail-item:first-child {
+  border-top: 1px solid #e0e0e0;
+}
+
+.order-detail-item-name {
+  font-size: 13px;
+  color: #000;
+  margin: 0;
+}
+
+.order-detail-item-sku {
+  font-size: 11px;
+  color: #757575;
+  margin: 4px 0 0 0;
+}
+
+.order-detail-item-price {
+  font-size: 13px;
+  color: #000;
+  margin: 0;
+  font-weight: 500;
+}
+
+.order-detail-summary-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.order-detail-summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #000;
+}
+
+.order-detail-summary-row--total {
+  font-weight: 500;
+  padding-top: 12px;
+  border-top: 1px solid #000;
+}
+
+.order-detail-continue {
+  display: inline-block;
+  margin-top: 24px;
+  font-size: 13px;
+  text-transform: uppercase;
+  color: #000;
+  text-decoration: none;
+  border-bottom: 1px solid #000;
+  padding-bottom: 2px;
+}
+
+.order-detail-qr-card {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 24px;
+  border: 1px solid #000;
+  background: #fff;
+  margin-bottom: 24px;
+}
+
+.order-detail-qr-canvas {
+  padding: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.order-detail-qr-canvas canvas {
+  display: block;
+}
+
+.order-detail-qr-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  color: #757575;
+  margin-bottom: 4px;
+}
+
+.order-detail-qr-code {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  margin: 0 0 8px 0;
+}
+
+.order-detail-qr-hint {
+  font-size: 12px;
+  color: #757575;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.order-detail-email-note {
+  font-size: 12px;
+  color: #757575;
+  margin-top: 24px;
+}
+
+@media (max-width: 992px) {
+  .order-detail-body {
+    grid-template-columns: 1fr;
+  }
+}

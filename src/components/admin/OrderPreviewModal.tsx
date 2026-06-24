@@ -1,6 +1,7 @@
 import { AdminIcon } from './AdminIcon';
 import { PackageIcon } from '@hugeicons/core-free-icons';
 import type { AdminOrder } from '../../types/commerce';
+import { getFirstPickupCode } from '../../utils/orderHelpers';
 
 const IDR = new Intl.NumberFormat('id-ID', {
   style: 'currency',
@@ -20,9 +21,7 @@ type OrderPreviewModalProps = {
 export function OrderPreviewModal({ order, isOpen, onClose, onConfirm, isConfirming, errorMessage }: OrderPreviewModalProps) {
   if (!isOpen || !order) return null;
 
-  const pickupCode = Array.isArray(order.pickup_codes)
-    ? order.pickup_codes[0]?.code
-    : (order.pickup_codes as any)?.code;
+  const pickupCode = getFirstPickupCode(order.pickup_codes)?.code;
   const canConfirm = order.payment_status === 'paid' && order.status === 'pending_pickup';
 
   return (

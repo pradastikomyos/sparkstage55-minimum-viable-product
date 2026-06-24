@@ -1,3 +1,5 @@
+import type { PickupCodeLike } from '../utils/orderHelpers';
+
 export type ProductStatus = 'draft' | 'active' | 'archived';
 export type OrderStatus = 'pending_payment' | 'paid' | 'pending_pickup' | 'picked_up' | 'cancelled' | 'expired';
 export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'expired' | 'cancelled';
@@ -40,11 +42,7 @@ export type AdminOrder = {
   paid_at: string | null;
   picked_up_at: string | null;
   created_at: string;
-  pickup_codes?: Array<{
-    code: string;
-    qr_payload: string;
-    verified_at: string | null;
-  }>;
+  pickup_codes?: PickupCodeLike[] | PickupCodeLike | null;
   order_items?: Array<{
     product_name: string;
     sku: string;

@@ -1,0 +1,25 @@
+:root {
+  --color-black: #000;
+  --color-white: #fff;
+  --color-muted: #757575;
+  --color-border: #e0e0e0;
+  --color-danger: #a00;
+  --color-notification: #ff3b30;
+
+  --font-sans: 'Helvetica Now Text', Helvetica, Arial, sans-serif;
+  --font-brand: 'GT-America Standard', Helvetica, Arial, sans-serif;
+
+  --z-base: 0;
+  --z-header: 1100;
+  --z-menu-scrim: 1900;
+  --z-menu: 2000;
+  --z-search: 2100;
+  --z-cart: 3000;
+  --z-modal: 9000;
+
+  --header-height: 72px;
+  --header-height-mobile: 56px;
+
+  --skeleton-base: #ebebeb;
+  --skeleton-sheen: #f7f7f7;
+}

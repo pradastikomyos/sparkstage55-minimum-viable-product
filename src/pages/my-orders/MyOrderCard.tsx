@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom';
 import QRCode from 'qrcode';
 import { useEffect, useMemo, useRef } from 'react';
-import { classifyOrder, isPickupReady, normalizeQrPayload } from '../../utils/orderHelpers';
+import { classifyOrder, getFirstPickupCode, isPickupReady, normalizeQrPayload } from '../../utils/orderHelpers';
 import type { MyOrder } from '../../hooks/useMyOrders';
+import styles from './MyOrderCard.module.css';
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat('id-ID', {
@@ -24,54 +25,55 @@ function QRCanvas({ payload }: { payload: string }) {
 
 export function MyOrderCard({ order }: { order: MyOrder }) {
   const category = useMemo(() => classifyOrder(order), [order]);
-  // pickup_codes may be array or single object — normalize to first item
-  const pickupCode = Array.isArray(order.pickup_codes)
-    ? order.pickup_codes[0]
-    : order.pickup_codes ?? undefined;
+  const pickupCode = getFirstPickupCode(order.pickup_codes);
   const showQr = isPickupReady(order) && pickupCode;
   const paidAt = order.paid_at ? new Date(order.paid_at).toLocaleString('id-ID') : null;
   const statusClass = category === 'pending' ? 'is-pending' : category === 'active' ? 'is-active' : 'is-history';
   const itemCount = order.order_items?.reduce((sum, item) => sum + item.quantity, 0) ?? 0;
 
   return (
-    <article className={`my-orders-card ${statusClass}`}>
-      <div className="my-orders-card__top">
+    <article className={`${styles.card} ${statusClass}`}>
+      <div className={styles.top}>
         <div>
-          <p className="my-orders-card__eyebrow">Invoice</p>
-          <h3 className="my-orders-card__invoice">{order.invoice_number}</h3>
-          <p className="my-orders-card__customer">{order.customer_name}</p>
+          <p className={styles.eyebrow}>Invoice</p>
+          <h3 className={styles.invoice}>{order.invoice_number}</h3>
+          <p className={styles.customer}>{order.customer_name}</p>
         </div>
-        <span className="my-orders-card__status">
+        <span className={styles.status}>
           {category === 'pending' ? 'Menunggu Pembayaran' : category === 'active' ? 'Siap Diambil' : 'Selesai'}
         </span>
       </div>
 
-      <div className="my-orders-card__meta">
-        <div className="my-orders-card__meta-grid">
+      <div className={styles.meta}>
+        <div className={styles.metaGrid}>
           <p><span>Tanggal</span>{new Date(order.created_at).toLocaleString('id-ID')}</p>
           <p><span>Total</span>{formatCurrency(order.total_amount_idr)}</p>
           <p><span>Item</span>{itemCount}</p>
           <p><span>Status</span>{category === 'pending' ? 'Menunggu pembayaran' : category === 'active' ? 'Siap diambil' : 'Selesai'}</p>
         </div>
-        {paidAt ? <p>Paid at: {paidAt}</p> : null}
+        {paidAt ? (
+          <p style={{ fontSize: '11px', color: '#757575', marginTop: '12px', textTransform: 'uppercase' }}>
+            DIBAYAR PADA: {paidAt}
+          </p>
+        ) : null}
       </div>
 
       {showQr && pickupCode ? (
-        <div className="my-orders-card__qr-row">
-          <div className="my-orders-card__qr-box">
+        <div className={styles.qrRow}>
+          <div className={styles.qrBox}>
             <QRCanvas payload={normalizeQrPayload(pickupCode.qr_payload)} />
           </div>
           <div>
-            <p className="my-orders-card__eyebrow">Pickup Code</p>
-            <p className="my-orders-card__pickup-code">{pickupCode.code}</p>
+            <p className={styles.eyebrow}>Kode Pengambilan</p>
+            <p className={styles.pickupCode}>{pickupCode.code}</p>
           </div>
         </div>
       ) : null}
 
-      <div className="my-orders-card__actions">
+      <div className={styles.actions}>
         <Link
           to={`/my-orders/${encodeURIComponent(order.invoice_number)}`}
-          className="my-orders-card__button"
+          className={styles.button}
         >
           Lihat Detail
         </Link>

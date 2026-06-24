@@ -31,7 +31,7 @@ export function DokuSection({ isReady }: DokuSectionProps) {
     payment_url: string;
   } | null>(null);
 
-  // Fetch products to pick the first active one for the demo checkout.
+  // Fetch products to pick the first active one for sandbox checkout testing.
   const productsQuery = useQuery({
     queryKey: ['admin-products'],
     queryFn: listAdminProducts,
@@ -49,7 +49,7 @@ export function DokuSection({ isReady }: DokuSectionProps) {
     },
   });
 
-  const runCheckoutDemo = () => {
+  const createSandboxCheckout = () => {
     if (!primaryProduct) return;
     checkoutMutation.mutate({
       customer: checkoutCustomer,
@@ -73,7 +73,7 @@ export function DokuSection({ isReady }: DokuSectionProps) {
         primaryProductName={primaryProduct?.name}
         result={checkoutResult}
         onCustomerChange={setCheckoutCustomer}
-        onCreateCheckout={runCheckoutDemo}
+        onCreateCheckout={createSandboxCheckout}
       />
     </section>
   );

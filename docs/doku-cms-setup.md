@@ -26,7 +26,7 @@ Sudah dibuat:
   - admin bisa mengelola produk, stok, order, dan pickup.
 - Trigger auth:
   - user baru otomatis dibuatkan row di `profiles`.
-- Seed produk dummy Spark:
+- Seed produk Spark:
   - `SPK101`
   - `SPK102`
   - `SPK103`
@@ -77,7 +77,7 @@ supabase secrets set DOKU_NOTIFICATION_URL=https://xyhdnprncjvhtdfyovpx.function
 supabase secrets set SITE_URL=http://localhost:5173
 ```
 
-Untuk deploy production/demo Vercel nanti, `SITE_URL` diganti ke URL deploy frontend.
+Untuk deploy production Vercel nanti, `SITE_URL` diganti ke URL deploy frontend.
 
 ## Membuat Admin
 

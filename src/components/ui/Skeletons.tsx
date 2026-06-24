@@ -87,16 +87,14 @@ export function AdminTableSkeleton() {
 }
 
 export function PdpSkeleton() {
-  // Rectangles have borderRadius: 0 so they read as "blocks" instead of pills,
-  // which matches the angular feel of the real PDP layout.
   const boxStyle = { borderRadius: 0 } as const;
 
   return (
-    <main className="zara-pdp-main" aria-hidden="true">
-      <div className="zara-pdp-left">
-        <div className="zara-image-gallery">
+    <main className="pdp-skeleton-main" aria-hidden="true">
+      <div className="pdp-skeleton-left">
+        <div className="pdp-skeleton-gallery">
           {Array.from({ length: 3 }).map((_, index) => (
-            <div className="zara-image-item" key={`pdp-skeleton-image-${index}`}>
+            <div className="pdp-skeleton-image-item" key={`pdp-skeleton-image-${index}`}>
               <span
                 className="skeleton-block"
                 style={{ width: '100%', height: '100%', ...boxStyle }}
@@ -107,20 +105,17 @@ export function PdpSkeleton() {
         </div>
       </div>
 
-      <div className="zara-pdp-right">
-        <div className="zara-product-info" style={{ width: '394px' }}>
-          {/* Title placeholder — mirrors the oversized .zara-product-title */}
+      <div className="pdp-skeleton-right">
+        <div style={{ width: '394px' }}>
           <span
             className="skeleton-block"
             style={{ width: '90%', height: 72, marginBottom: 20, ...boxStyle }}
             aria-hidden="true"
           />
-          {/* Price line */}
           <SkeletonBlock className="skeleton-line is-short" />
 
-          <hr className="zara-divider" style={{ marginTop: 24 }} />
+          <hr className="pdp-skeleton-divider" style={{ marginTop: 24 }} />
 
-          {/* ADD button placeholder */}
           <span
             className="skeleton-block"
             style={{
@@ -133,15 +128,13 @@ export function PdpSkeleton() {
             aria-hidden="true"
           />
 
-          {/* Description lines */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 48 }}>
             <SkeletonBlock className="skeleton-line" />
             <SkeletonBlock className="skeleton-line" />
             <SkeletonBlock className="skeleton-line is-short" />
           </div>
 
-          {/* 4 expandable rows */}
-          <div className="zara-expandable-section">
+          <div className="pdp-skeleton-expandable">
             {Array.from({ length: 4 }).map((_, index) => (
               <div
                 key={`pdp-skeleton-row-${index}`}

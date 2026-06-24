@@ -1,0 +1,126 @@
+.card {
+  border-bottom: 1px solid #f0f0f0;
+  padding: 24px 0;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 300;
+  color: #757575;
+  text-transform: uppercase;
+  margin: 0 0 4px;
+  letter-spacing: 0.05em;
+}
+
+.invoice {
+  font-size: 15px;
+  font-weight: 500;
+  color: #000;
+  margin: 0 0 2px;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+.customer {
+  font-size: 11px;
+  font-weight: 300;
+  color: #757575;
+  margin: 0;
+}
+
+.status {
+  font-size: 10px;
+  font-weight: 400;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 0;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.meta {
+  margin-top: 8px;
+}
+
+.metaGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 16px;
+}
+
+.metaGrid p {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  color: #000;
+  margin: 0;
+}
+
+.metaGrid span {
+  font-size: 10px;
+  color: #757575;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.qrRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin: 16px 0;
+  padding: 16px;
+  background: #fafafa;
+}
+
+.qrBox {
+  flex-shrink: 0;
+  width: 100px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+}
+
+.qrBox canvas {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.pickupCode {
+  font-size: 24px;
+  font-weight: 600;
+  color: #000;
+  letter-spacing: 0.1em;
+  margin: 8px 0 0;
+}
+
+.actions {
+  margin-top: 16px;
+}
+
+.button {
+  display: inline-block;
+  padding: 8px 24px;
+  border: 1px solid #000;
+  color: #000;
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: background 0.2s, color 0.2s;
+}
+
+.button:hover {
+  background: #000;
+  color: #fff;
+}

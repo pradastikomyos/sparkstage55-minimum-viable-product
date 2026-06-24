@@ -1,7 +1,7 @@
 /**
  * SiteFooter — Prada-style footer with newsletter, social links,
  * company/legal columns, and copyright bar.
- * Footer links are intentionally inert for the demo.
+ * Footer links are intentionally inert until their destinations are configured.
  */
 
 export function SiteFooter() {

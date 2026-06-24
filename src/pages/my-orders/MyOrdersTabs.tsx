@@ -1,3 +1,5 @@
+import styles from './MyOrdersTabs.module.css';
+
 type MyOrdersTabsProps = {
   activeTab: 'pending' | 'active' | 'history';
   pendingCount: number;
@@ -14,13 +16,13 @@ export function MyOrdersTabs({ activeTab, pendingCount, activeCount, historyCoun
   ];
 
   return (
-    <div className="my-orders-tabs">
+    <div className={styles.container}>
       {tabs.map((tab) => (
         <button
           key={tab.id}
           type="button"
           onClick={() => onChange(tab.id)}
-          className={`my-orders-tab${activeTab === tab.id ? ' is-active' : ''}`}
+          className={`${styles.tab}${activeTab === tab.id ? ` ${styles.active}` : ''}`}
         >
           {tab.label} ({tab.count})
         </button>

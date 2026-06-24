@@ -84,7 +84,7 @@ export function MenPage() {
         ) : !isSupabaseConfigured ? (
           <CatalogState
             title="Catalog database is not configured"
-            message="Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to load products for the demo."
+            message="Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to load products."
           />
         ) : hasError ? (
           <CatalogState
@@ -94,7 +94,7 @@ export function MenPage() {
         ) : !hasAnyProducts ? (
           <CatalogState
             title="No men products found"
-            message="Add active products for the men categories in the database before the demo."
+            message="Add active products for the men categories in the database."
           />
         ) : (
           sections.map((section) => (

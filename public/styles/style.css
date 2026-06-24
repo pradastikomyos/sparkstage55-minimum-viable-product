@@ -14,6 +14,22 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: 'Helvetica Now Text';
+  src: url('/fonts/helvetica-now/HelveticaNowText-Light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Helvetica Now Text';
+  src: url('/fonts/helvetica-now/HelveticaNowText-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --primary-font: 'GT-America Standard', sans-serif;
   --logo-font: 'GT-America Standard', serif;
@@ -1276,6 +1292,64 @@ a:focus-visible,
   .admin-skeleton-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .pdp-skeleton-main {
+    flex-direction: column;
+  }
+
+  .pdp-skeleton-left,
+  .pdp-skeleton-right {
+    width: 100%;
+    height: auto;
+  }
+
+  .pdp-skeleton-right {
+    padding: 60px 20px;
+  }
+}
+
+.pdp-skeleton-main {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+  background: #fff;
+}
+
+.pdp-skeleton-left {
+  width: 50%;
+  border-right: 1px solid #f0f0f0;
+}
+
+.pdp-skeleton-gallery {
+  display: flex;
+  flex-direction: column;
+}
+
+.pdp-skeleton-image-item {
+  width: 100%;
+  min-height: 100vh;
+  background: #f8f8f8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pdp-skeleton-right {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 80px 0 100px;
+}
+
+.pdp-skeleton-divider {
+  border: 0;
+  border-top: 0.66px solid #000;
+}
+
+.pdp-skeleton-expandable {
+  display: flex;
+  flex-direction: column;
 }
 
 @keyframes skeleton-shimmer {

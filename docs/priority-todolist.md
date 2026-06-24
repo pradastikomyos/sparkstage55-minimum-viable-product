@@ -73,7 +73,7 @@ Dokumen ini memetakan sisa pekerjaan setelah frontend dipindah ke React data-dri
 - [ ] Tambahkan poster/fallback untuk semua video hero.
 - [ ] Rapikan focus trap lengkap dan focus-return untuk semua overlay.
 - [ ] Bersihkan karakter mojibake di CSS.
-- [ ] Tambahkan filter/sort UI dummy yang stabil.
+- [ ] Tambahkan filter/sort UI yang stabil.
 - [ ] Dokumentasikan visual audit per viewport.
 - [ ] Polish login UX lokal: inline validation, status, dan icon password yang benar.
 - [ ] Update README dengan status migrasi React data-driven.
