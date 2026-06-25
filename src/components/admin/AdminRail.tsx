@@ -1,4 +1,5 @@
 import {
+  BarChartIcon,
   DashboardSquare03Icon,
   ImageAdd02Icon,
   Invoice03Icon,
@@ -21,6 +22,7 @@ type AdminNavItem = {
 
 const MOBILE_TABS: AdminNavItem[] = [
   { view: 'dashboard', icon: DashboardSquare03Icon, label: 'Dashboard' },
+  { view: 'reports', icon: BarChartIcon, label: 'Laporan' },
   { view: 'inventory', icon: ShoppingBag03Icon, label: 'Produk' },
   { view: 'orders', icon: Invoice03Icon, label: 'Pesanan' },
   { view: 'bopis', icon: QrCodeScanIcon, label: 'Scan QR' },
@@ -32,6 +34,7 @@ const RAIL_TABS: AdminNavItem[] = [
   { view: 'inventory', icon: ShoppingBag03Icon, label: 'Products' },
   { view: 'orders', icon: Invoice03Icon, label: 'Orders' },
   { view: 'payments', icon: Payment02Icon, label: 'Payment Health' },
+  { view: 'reports', icon: BarChartIcon, label: 'Laporan' },
   { view: 'bopis', icon: QrCodeScanIcon, label: 'BOPIS Pickup' },
   { view: 'cms', icon: ImageAdd02Icon, label: 'CMS Assets' },
   { view: 'banners', icon: LayersLogoIcon, label: 'Banner Manager' },

@@ -1,5 +1,6 @@
 import {
   Add01Icon,
+  BarChartIcon,
   DashboardSquare03Icon,
   ImageAdd02Icon,
   Invoice03Icon,
@@ -33,6 +34,7 @@ const NAV_ITEMS: { view: AdminView; icon: any; label: string }[] = [
   { view: 'inventory', icon: PackageIcon, label: 'Inventory' },
   { view: 'orders', icon: Invoice03Icon, label: 'Orders' },
   { view: 'payments', icon: Payment02Icon, label: 'Payment Health' },
+  { view: 'reports', icon: BarChartIcon, label: 'Laporan Penjualan' },
   { view: 'bopis', icon: QrCodeScanIcon, label: 'BOPIS Verify' },
   { view: 'cms', icon: ImageAdd02Icon, label: 'CMS Assets' },
   { view: 'banners', icon: LayersLogoIcon, label: 'Banners' },

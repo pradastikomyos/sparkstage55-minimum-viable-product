@@ -24,7 +24,7 @@ import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import { getCurrentUserRole } from '../services/auth';
 import { ADMIN_VIEWS, type AdminView } from './admin/types';
 
-const OWNER_VIEWS = ['dashboard', 'orders', 'payments'] as const satisfies readonly AdminView[];
+const OWNER_VIEWS = ['dashboard', 'orders', 'payments', 'reports'] as const satisfies readonly AdminView[];
 
 // Section components are lazy-loaded so each section's bundle is only
 // downloaded when the admin first navigates to that tab.
@@ -51,6 +51,9 @@ const BannerSection = lazy(() =>
 );
 const CategorySection = lazy(() =>
   import('./admin/CategorySection').then((m) => ({ default: m.CategorySection })),
+);
+const ReportsSection = lazy(() =>
+  import('./admin/ReportsSection').then((m) => ({ default: m.ReportsSection })),
 );
 
 function SectionFallback() {
@@ -277,6 +280,7 @@ export function AdminPage({ mode = 'admin' }: AdminPageProps) {
           {mode === 'admin' && tab === 'inventory' && <InventorySection isReady={isReady} />}
           {tab === 'orders' && <OrdersSection isReady={isReady} />}
           {tab === 'payments' && <PaymentHealthSection isReady={isReady} />}
+          {tab === 'reports' && <ReportsSection isReady={isReady} />}
           {mode === 'admin' && tab === 'bopis' && <BopisSection />}
           {mode === 'admin' && tab === 'cms' && <CmsSection isReady={isReady} />}
           {mode === 'admin' && tab === 'banners' && <BannerSection isReady={isReady} />}

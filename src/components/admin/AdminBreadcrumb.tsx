@@ -5,6 +5,7 @@ const VIEW_LABELS: Record<AdminView, string> = {
   inventory: 'Inventory',
   orders: 'Orders',
   payments: 'Payment Health',
+  reports: 'Laporan',
   bopis: 'BOPIS Pickup',
   cms: 'CMS Assets',
   banners: 'Banners',

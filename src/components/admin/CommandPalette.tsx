@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import {
+  BarChartIcon,
   DashboardSquare03Icon,
   PackageIcon,
   Invoice03Icon,
@@ -23,6 +24,7 @@ const COMMANDS: CommandItem[] = [
   { view: 'inventory', icon: PackageIcon, label: 'Inventory' },
   { view: 'orders', icon: Invoice03Icon, label: 'Orders' },
   { view: 'payments', icon: Payment02Icon, label: 'Payment Health' },
+  { view: 'reports', icon: BarChartIcon, label: 'Laporan Penjualan' },
   { view: 'bopis', icon: QrCodeScanIcon, label: 'BOPIS Pickup' },
   { view: 'cms', icon: ImageAdd02Icon, label: 'CMS Assets' },
   { view: 'banners', icon: LayersLogoIcon, label: 'Banners' },
