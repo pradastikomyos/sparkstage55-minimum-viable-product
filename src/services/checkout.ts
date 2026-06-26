@@ -119,3 +119,17 @@ export async function reconcileDokuPayment(input: { invoice_number?: string; inv
     raw: data,
   } satisfies DokuReconcileResponse;
 }
+
+/**
+ * Cancel a pending DOKU order and release inventory reservations.
+ */
+export async function cancelDokuOrder(invoiceNumber: string) {
+  const client = requireSupabaseClient();
+  const { data, error } = await client.functions.invoke('cancel-doku-order', {
+    body: { invoice_number: invoiceNumber },
+  });
+
+  if (error) throw error;
+  if (data?.error) throw new Error(data.error);
+  return data as { ok: boolean; message?: string };
+}

@@ -1,0 +1,4 @@
+-- Remote migration history contains this version. The effective fix is
+-- represented in 20260610101934_fix_payment_event_digest_ambiguity.sql,
+-- which replaces public.process_doku_payment_event with fully qualified
+-- order_id references.

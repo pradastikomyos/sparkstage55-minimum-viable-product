@@ -33,6 +33,9 @@ const ProductPage = lazy(() =>
 const AdminPage = lazy(() =>
   import('../pages/AdminPage').then((m) => ({ default: m.AdminPage })),
 );
+const CheckoutPage = lazy(() =>
+  import('../pages/CheckoutPage').then((m) => ({ default: m.CheckoutPage })),
+);
 const CheckoutResultPage = lazy(() =>
   import('../pages/CheckoutResultPage').then((m) => ({ default: m.CheckoutResultPage })),
 );
@@ -142,6 +145,16 @@ export const router = createBrowserRouter([
               <Suspense fallback={<PageFallback />}>
                 <ProductPage />
               </Suspense>
+            ),
+          },
+          {
+            path: '/checkout',
+            element: (
+              <ProtectedRoute>
+                <Suspense fallback={<PageFallback />}>
+                  <CheckoutPage />
+                </Suspense>
+              </ProtectedRoute>
             ),
           },
           {

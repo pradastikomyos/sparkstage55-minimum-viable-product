@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { Minus, Plus, Trash, X } from '@phosphor-icons/react';
@@ -10,8 +10,6 @@ import {
   removeCartItem,
   updateCartItemQuantity,
 } from '../../services/cart';
-import { createDokuCheckout } from '../../services/commerce';
-import { loadDokuCheckoutScript, openDokuCheckout } from '../../utils/dokuCheckout';
 import type { CartItem } from '../../types/commerce';
 import { useAuthUser } from '../../hooks/useCartSummary';
 
@@ -27,9 +25,6 @@ export function CartDrawer() {
   const navigate = useNavigate();
   const { userId, email } = useAuthUser();
   const queryClient = useQueryClient();
-
-  const [checkoutError, setCheckoutError] = useState<string | null>(null);
-  const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   // Lock background scroll while the drawer is open.
   useEffect(() => {
@@ -121,42 +116,10 @@ export function CartDrawer() {
     onSuccess: invalidateCart,
   });
 
-  const handleCheckout = async () => {
+  const handleCheckout = () => {
     if (!items.length || !email) return;
-    setCheckoutError(null);
-    setIsCheckingOut(true);
-    try {
-      await loadDokuCheckoutScript();
-      const result = await createDokuCheckout({
-        customer: {
-          name: email ?? 'Customer',
-          email: email ?? undefined,
-          // phone intentionally omitted — DOKU rejects empty string, field is optional
-        },
-        items: items.map((item) => ({
-          product_id: item.product_id,
-          variant_id: item.variant_id ?? undefined,
-          quantity: item.quantity,
-        })),
-      });
-      if (result?.payment_url) {
-        // Navigate to the result page FIRST so it's ready in the background,
-        // then open the DOKU SDK overlay on top of it.
-        // If navigate is called after openDokuCheckout, the SDK overlay
-        // detects the page change and closes itself immediately.
-        setCartDrawerOpen(false);
-        navigate(`/checkout-result?invoice=${encodeURIComponent(result.invoice_number)}&pending=1`);
-        // Small tick to let React commit the navigation before SDK overlay mounts
-        await new Promise((resolve) => setTimeout(resolve, 50));
-        openDokuCheckout(result.payment_url);
-        return;
-      }
-      setCheckoutError('Checkout did not return a payment URL.');
-    } catch (error) {
-      setCheckoutError(error instanceof Error ? error.message : 'Checkout failed.');
-    } finally {
-      setIsCheckingOut(false);
-    }
+    setCartDrawerOpen(false);
+    navigate('/checkout');
   };
 
   const guest = !userId;
@@ -291,16 +254,12 @@ export function CartDrawer() {
               <span>Total</span>
               <span className="cart-drawer-total-value">{IDR.format(total)}</span>
             </div>
-            {checkoutError ? (
-              <p className="cart-drawer-checkout-error">{checkoutError}</p>
-            ) : null}
             <button
               type="button"
               className="cart-drawer-checkout"
-              disabled={isCheckingOut}
               onClick={handleCheckout}
             >
-              {isCheckingOut ? 'Memproses…' : 'Checkout'}
+              Checkout
             </button>
           </footer>
         ) : null}

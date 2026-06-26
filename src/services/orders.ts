@@ -10,6 +10,7 @@ export type CheckoutResultOrder = {
   status: OrderStatus;
   payment_status: PaymentStatus;
   total_amount_idr: number;
+  doku_payment_url?: string | null;
   paid_at: string | null;
   created_at: string;
   pickup_codes: PickupCodeLike[] | PickupCodeLike | null;

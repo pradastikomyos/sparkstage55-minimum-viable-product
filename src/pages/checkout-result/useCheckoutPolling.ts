@@ -2,16 +2,28 @@ import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQueryClient, type UseQueryResult } from '@tanstack/react-query';
 import { reconcileDokuPayment, type CheckoutResultResponse } from '../../services/checkout';
 
-const POLL_DELAYS = [0, 4_000, 8_000, 15_000, 30_000, 60_000] as const;
-const MAX_POLLS = 15;
-const AUTO_RECONCILE_AFTER_POLLS = 3;
+const POLL_DELAYS = [0, 3_000, 6_000, 10_000] as const;
+const MAX_POLLS = 5;
+const AUTO_RECONCILE_AFTER_POLLS = 2;
+const SHOW_FALLBACK_AFTER_MS = 20_000;
 
 type OrderQueryResult = Pick<UseQueryResult<CheckoutResultResponse, Error>, 'data' | 'isLoading' | 'isFetching' | 'isError' | 'refetch'>;
 
 export function useCheckoutPolling({ invoice, orderQuery }: { invoice: string | null; orderQuery: OrderQueryResult }) {
   const [pollCount, setPollCount] = useState(0);
+  const [elapsedMs, setElapsedMs] = useState(0);
+  const startTimeRef = useRef(Date.now());
   const queryClient = useQueryClient();
   const autoReconcileTriggered = useRef(false);
+
+  useEffect(() => {
+    startTimeRef.current = Date.now();
+    setElapsedMs(0);
+    const interval = window.setInterval(() => {
+      setElapsedMs(Date.now() - startTimeRef.current);
+    }, 1000);
+    return () => window.clearInterval(interval);
+  }, [invoice]);
 
   useEffect(() => {
     if (!invoice) return;
@@ -63,7 +75,12 @@ export function useCheckoutPolling({ invoice, orderQuery }: { invoice: string | 
     }
   }, [pollCount, invoice, orderQuery.data, reconcileMutation]);
 
-  const resetPolling = () => setPollCount(0);
+  const resetPolling = () => {
+    setPollCount(0);
+    startTimeRef.current = Date.now();
+    setElapsedMs(0);
+    autoReconcileTriggered.current = false;
+  };
 
   const isPending = Boolean(
     orderQuery.data?.kind !== 'not_found' &&
@@ -71,10 +88,13 @@ export function useCheckoutPolling({ invoice, orderQuery }: { invoice: string | 
       (!orderQuery.data?.order || orderQuery.data.order.status === 'pending_payment'),
   );
 
+  const shouldShowFallback = isPending && (pollCount >= MAX_POLLS || elapsedMs >= SHOW_FALLBACK_AFTER_MS);
+
   return {
     pollCount,
-    isPollingExhausted: isPending && pollCount >= MAX_POLLS,
+    isPollingExhausted: shouldShowFallback,
     reconcileMutation,
     resetPolling,
+    elapsedMs,
   };
 }

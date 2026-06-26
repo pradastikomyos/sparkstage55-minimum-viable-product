@@ -83,6 +83,8 @@ export function CheckoutResultPage() {
   );
   const isNotOwner = resultKind === 'not_owner';
   const isNotFound = resultKind === 'not_found';
+  
+  const dokuPaymentUrl = order?.doku_payment_url ?? null;
 
   return (
     <div className="checkout-result-page">
@@ -99,6 +101,7 @@ export function CheckoutResultPage() {
         isNotOwner={isNotOwner}
         isNotFound={isNotFound}
         resetPolling={resetPolling}
+        dokuPaymentUrl={dokuPaymentUrl}
       />
     </div>
   );

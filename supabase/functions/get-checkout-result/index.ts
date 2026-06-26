@@ -46,8 +46,11 @@ async function getCaller(req: Request, supabaseUrl: string, serviceRoleKey: stri
   return { userId: data.user.id, isAdmin: profile?.role === 'admin' };
 }
 
-function publicOrder(order: Record<string, unknown>) {
+function publicOrder(order: Record<string, unknown>, isOwner: boolean) {
   const { user_id: _userId, ...safeOrder } = order;
+  if (!isOwner) {
+    delete safeOrder.doku_payment_url;
+  }
   return safeOrder;
 }
 
@@ -76,6 +79,7 @@ Deno.serve(async (req) => {
         status,
         payment_status,
         total_amount_idr,
+        doku_payment_url,
         paid_at,
         created_at,
         pickup_codes(code, qr_payload, verified_at),
@@ -109,9 +113,11 @@ Deno.serve(async (req) => {
         ? 'paid'
         : 'found';
 
+    const isOwner = caller.userId === order.user_id;
+
     return jsonResponse({
       kind,
-      order: publicOrder(order),
+      order: publicOrder(order, isOwner),
       can_reconcile: order.status === 'pending_payment',
     });
   } catch (error) {

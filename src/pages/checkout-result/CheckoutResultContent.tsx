@@ -1,11 +1,14 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BrandLogo } from '../../components/ui/BrandLogo';
 import type { CheckoutResultOrder } from '../../services/orders';
 import type { CheckoutResultResponse } from '../../services/checkout';
 import { getFirstPickupCode } from '../../utils/orderHelpers';
+import { loadDokuCheckoutScript, openDokuCheckout } from '../../utils/dokuCheckout';
 import { CheckoutSuccessView } from './CheckoutSuccessView';
 import { RotatingPendingMessage } from './RotatingPendingMessage';
 import { StatusIcon } from './StatusIcon';
+import { cancelDokuOrder } from '../../services/checkout';
 
 type OrderQueryResult = {
   isLoading: boolean;
@@ -36,6 +39,7 @@ export function CheckoutResultContent({
   isNotOwner,
   isNotFound,
   resetPolling,
+  dokuPaymentUrl,
 }: {
   invoice: string | null;
   orderQuery: OrderQueryResult;
@@ -49,7 +53,33 @@ export function CheckoutResultContent({
   isNotOwner: boolean;
   isNotFound: boolean;
   resetPolling: () => void;
+  dokuPaymentUrl?: string | null;
 }) {
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [cancelError, setCancelError] = useState<string | null>(null);
+  const [isCancellingSuccess, setIsCancellingSuccess] = useState(false);
+
+  const handleResumePayment = async () => {
+    if (dokuPaymentUrl) {
+      await loadDokuCheckoutScript();
+      openDokuCheckout(dokuPaymentUrl);
+    }
+  };
+
+  const handleCancelOrder = async () => {
+    if (!invoice || isCancelling) return;
+    setIsCancelling(true);
+    setCancelError(null);
+    try {
+      await cancelDokuOrder(invoice);
+      setIsCancellingSuccess(true);
+      await orderQuery.refetch();
+    } catch (error) {
+      setCancelError(error instanceof Error ? error.message : 'Gagal membatalkan pesanan.');
+    } finally {
+      setIsCancelling(false);
+    }
+  };
   if (!invoice) {
     return (
       <>
@@ -104,12 +134,12 @@ export function CheckoutResultContent({
           <>
             <StatusIcon status="pending_payment" />
             <p className="checkout-result-eyebrow">Menunggu konfirmasi</p>
-            <h1 className="checkout-result-title">Pembayaran belum terkonfirmasi</h1>
+            <h1 className="checkout-result-title">Pembayaran belum diselesaikan</h1>
             <p className="checkout-result-body">
-              Pembayaran kamu mungkin masih diproses oleh bank atau DOKU. Kamu bisa meminta sistem mengecek
-              status langsung ke DOKU tanpa membagikan detail pembayaran.
+              Jika kamu menutup atau batal dari DOKU, kamu bisa melanjutkan pembayaran atau membatalkan pesanan.
             </p>
             <p className="checkout-result-invoice">Invoice: <strong>{invoice}</strong></p>
+            
             {reconcileMutation.data?.message ? (
               <p className="checkout-result-status-note">{reconcileMutation.data.message}</p>
             ) : null}
@@ -118,21 +148,54 @@ export function CheckoutResultContent({
                 {reconcileMutation.error.message}
               </p>
             ) : null}
-            <button
-              type="button"
-              className="checkout-result-cta-secondary"
-              disabled={reconcileMutation.isPending}
-              onClick={() => reconcileMutation.mutate()}
-            >
-              {reconcileMutation.isPending ? 'Mengecek DOKU...' : 'Cek status ke DOKU'}
-            </button>
-            <button
-              type="button"
-              className="checkout-result-text-button"
-              onClick={() => { resetPolling(); orderQuery.refetch(); }}
-            >
-              Cek ulang halaman
-            </button>
+            {cancelError && (
+              <p className="checkout-result-status-note checkout-result-status-note--error">
+                {cancelError}
+              </p>
+            )}
+            
+            <div className="checkout-result-actions" style={{ flexDirection: 'column', gap: '12px', width: '100%', maxWidth: '320px' }}>
+              {dokuPaymentUrl && (
+                <button
+                  type="button"
+                  className="checkout-result-cta"
+                  onClick={handleResumePayment}
+                >
+                  Lanjutkan Pembayaran
+                </button>
+              )}
+              <button
+                type="button"
+                className="checkout-result-cta-secondary"
+                disabled={reconcileMutation.isPending}
+                onClick={() => reconcileMutation.mutate()}
+              >
+                {reconcileMutation.isPending ? 'Mengecek DOKU...' : 'Cek Status Pembayaran'}
+              </button>
+              <button
+                type="button"
+                className="checkout-result-text-button"
+                onClick={() => { resetPolling(); orderQuery.refetch(); }}
+              >
+                Cek Ulang Halaman
+              </button>
+              {!isCancellingSuccess && (
+                <button
+                  type="button"
+                  className="checkout-result-cta-secondary"
+                  style={{ color: '#dc2626', borderColor: '#dc2626' }}
+                  disabled={isCancelling}
+                  onClick={handleCancelOrder}
+                >
+                  {isCancelling ? 'Membatalkan...' : 'Batalkan Pesanan'}
+                </button>
+              )}
+              {isCancellingSuccess && (
+                <p className="checkout-result-status-note" style={{ color: '#16a34a' }}>
+                  Pesanan berhasil dibatalkan. Stok telah dikembalikan.
+                </p>
+              )}
+            </div>
           </>
         )}
 
