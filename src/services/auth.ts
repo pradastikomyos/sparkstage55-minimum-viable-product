@@ -1,6 +1,6 @@
 import { requireSupabaseClient } from '../lib/supabase';
 
-export type AppRole = 'admin' | 'owner' | 'customer';
+export type AppRole = 'admin' | 'owner' | 'pimpinan' | 'customer';
 
 export async function getCurrentUserRole(): Promise<AppRole | null> {
   const client = requireSupabaseClient();
@@ -34,7 +34,11 @@ export function resolvePostLoginPath(role: AppRole | null, requestedRedirect: st
     return requestedRedirect && requestedRedirect.startsWith('/owner') ? requestedRedirect : '/owner';
   }
 
-  return requestedRedirect && !requestedRedirect.includes('admin') && !requestedRedirect.includes('owner')
+  if (role === 'pimpinan') {
+    return requestedRedirect && requestedRedirect.startsWith('/pimpinan') ? requestedRedirect : '/pimpinan';
+  }
+
+  return requestedRedirect && !requestedRedirect.includes('admin') && !requestedRedirect.includes('owner') && !requestedRedirect.includes('pimpinan')
     ? requestedRedirect
     : '/';
 }

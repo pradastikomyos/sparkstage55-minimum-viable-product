@@ -47,6 +47,7 @@ const MyOrderDetailPage = lazy(() =>
 );
 
 const OWNER_ROUTE_ROLES = ['owner'];
+const PIMPINAN_ROUTE_ROLES = ['pimpinan'];
 
 function PageFallback() {
   return <div className="page-fallback" aria-hidden="true" />;
@@ -223,6 +224,20 @@ export const router = createBrowserRouter([
               </ProtectedRoute>
             ),
           },
+          {
+            path: '/pimpinan',
+            element: <Navigate to="/pimpinan/dashboard" replace />,
+          },
+          {
+            path: '/pimpinan/:tab',
+            element: (
+              <ProtectedRoute allowedRoles={PIMPINAN_ROUTE_ROLES}>
+                <Suspense fallback={<PageFallback />}>
+                  <AdminPage mode="pimpinan" />
+                </Suspense>
+              </ProtectedRoute>
+            ),
+          },
         ],
       },
 
@@ -235,6 +250,7 @@ export const router = createBrowserRouter([
       { path: '/product.html',      element: <Navigate to="/" replace /> },
       { path: '/admin.html',        element: <Navigate to="/admin" replace /> },
       { path: '/owner.html',        element: <Navigate to="/owner" replace /> },
+      { path: '/pimpinan.html',     element: <Navigate to="/pimpinan" replace /> },
 
       // ── 404 ────────────────────────────────────────────────
       { path: '*', element: <Navigate to="/" replace /> },

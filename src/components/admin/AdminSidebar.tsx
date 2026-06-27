@@ -25,7 +25,7 @@ type AdminSidebarProps = {
   onChangeView: (view: AdminView) => void;
   onAddProduct: () => void;
   onSignOut: () => void;
-  mode?: 'admin' | 'owner';
+  mode?: 'admin' | 'owner' | 'pimpinan';
   allowedViews?: readonly AdminView[];
 };
 
@@ -62,7 +62,7 @@ export function AdminSidebar({
           <AdminIcon icon={UserCircleIcon} size={28} />
         </div>
         <div>
-          <strong>{mode === 'owner' ? 'Owner Spark' : 'Admin Spark'}</strong>
+          <strong>{mode === 'pimpinan' ? 'Pimpinan Spark' : mode === 'owner' ? 'Owner Spark' : 'Admin Spark'}</strong>
           <span>{email}</span>
         </div>
       </section>

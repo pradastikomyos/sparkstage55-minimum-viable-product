@@ -22,9 +22,10 @@ import { Session } from '@supabase/supabase-js';
 import { AdminRail, AdminMobileNav, AdminSidebar, CommandPalette, AdminBreadcrumb } from '../components/admin';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import { getCurrentUserRole } from '../services/auth';
-import { ADMIN_VIEWS, type AdminView } from './admin/types';
+import { ADMIN_VIEWS, PIMPINAN_VIEWS, type AdminView } from './admin/types';
 
 const OWNER_VIEWS = ['dashboard', 'orders', 'payments', 'reports'] as const satisfies readonly AdminView[];
+const PIMPINAN_ALLOWED_VIEWS = PIMPINAN_VIEWS as readonly AdminView[];
 
 // Section components are lazy-loaded so each section's bundle is only
 // downloaded when the admin first navigates to that tab.
@@ -55,6 +56,9 @@ const CategorySection = lazy(() =>
 const ReportsSection = lazy(() =>
   import('./admin/ReportsSection').then((m) => ({ default: m.ReportsSection })),
 );
+const PimpinanDashboardSection = lazy(() =>
+  import('./admin/PimpinanDashboardSection').then((m) => ({ default: m.PimpinanDashboardSection })),
+);
 
 function SectionFallback() {
   return (
@@ -67,30 +71,30 @@ function SectionFallback() {
 }
 
 type AdminPageProps = {
-  mode?: 'admin' | 'owner';
+  mode?: 'admin' | 'owner' | 'pimpinan';
 };
 
 export function AdminPage({ mode = 'admin' }: AdminPageProps) {
   const [session, setSession] = useState<Session | null>(null);
-  const [role, setRole] = useState<'admin' | 'owner' | 'customer' | null>(null);
+  const [role, setRole] = useState<'admin' | 'owner' | 'pimpinan' | 'customer' | null>(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   const navigate = useNavigate();
   const { tab: rawTab } = useParams<{ tab: string }>();
-  const allowedViews = mode === 'owner' ? OWNER_VIEWS : ADMIN_VIEWS;
-  const defaultTab: AdminView = mode === 'owner' ? 'dashboard' : 'inventory';
+  const allowedViews = mode === 'pimpinan' ? PIMPINAN_ALLOWED_VIEWS : mode === 'owner' ? OWNER_VIEWS : ADMIN_VIEWS;
+  const defaultTab: AdminView = mode === 'pimpinan' ? 'dashboard' : mode === 'owner' ? 'dashboard' : 'inventory';
   const tab: AdminView = (rawTab && (allowedViews as readonly string[]).includes(rawTab))
     ? rawTab as AdminView
     : defaultTab;
 
-  const basePath = mode === 'owner' ? '/owner' : '/admin';
+  const basePath = mode === 'pimpinan' ? '/pimpinan' : mode === 'owner' ? '/owner' : '/admin';
   const setTab = (next: AdminView) => {
     if (!(allowedViews as readonly string[]).includes(next)) return;
     navigate(`${basePath}/${next}`, { replace: true });
   };
   const totalStockQuery = useQuery({
     queryKey: ['admin-total-stock'],
-    enabled: Boolean(session && (role === 'admin' || role === 'owner')),
+    enabled: Boolean(session && (role === 'admin' || role === 'owner' || role === 'pimpinan')),
     queryFn: async () => {
       // TODO: Kiro — verifikasi RLS allow admin read all variants.
       if (!supabase) return 0;
@@ -164,7 +168,7 @@ export function AdminPage({ mode = 'admin' }: AdminPageProps) {
 
   useEffect(() => {
     if (!isSupabaseConfigured || isCheckingAuth) return;
-    const expectedRole = mode === 'owner' ? 'owner' : 'admin';
+    const expectedRole = mode === 'pimpinan' ? 'pimpinan' : mode === 'owner' ? 'owner' : 'admin';
     // ProtectedRoute in router.tsx handles redirect to /login and / for unauthorized.
     // AdminPage only needs to handle the role check for the "use another account" UI.
     if (role && role !== expectedRole) {
@@ -192,7 +196,7 @@ export function AdminPage({ mode = 'admin' }: AdminPageProps) {
     return (
       <main className="admin-page">
         <section className="admin-panel">
-          <p className="admin-eyebrow">{mode === 'owner' ? 'Owner Dashboard' : 'CMS Admin'}</p>
+          <p className="admin-eyebrow">{mode === 'pimpinan' ? 'Dashboard Pimpinan' : mode === 'owner' ? 'Owner Dashboard' : 'CMS Admin'}</p>
           <h1>Supabase env belum tersedia</h1>
           <p>
             Isi <code>.env.local</code> dengan{' '}
@@ -208,7 +212,7 @@ export function AdminPage({ mode = 'admin' }: AdminPageProps) {
     return (
       <main className="admin-page">
         <section className="admin-panel">
-          <p className="admin-eyebrow">{mode === 'owner' ? 'Spark Stage Owner' : 'Spark Stage CMS'}</p>
+          <p className="admin-eyebrow">{mode === 'pimpinan' ? 'Spark Stage Pimpinan' : mode === 'owner' ? 'Spark Stage Owner' : 'Spark Stage CMS'}</p>
           <h1>Mengecek sesi...</h1>
         </section>
       </main>
@@ -219,7 +223,7 @@ export function AdminPage({ mode = 'admin' }: AdminPageProps) {
     return (
       <main className="admin-page">
         <section className="admin-panel">
-          <p className="admin-eyebrow">{mode === 'owner' ? 'Spark Stage Owner' : 'Spark Stage CMS'}</p>
+          <p className="admin-eyebrow">{mode === 'pimpinan' ? 'Spark Stage Pimpinan' : mode === 'owner' ? 'Spark Stage Owner' : 'Spark Stage CMS'}</p>
           <h1>Access denied</h1>
           <p className="admin-muted">
             Akun ini bukan {mode}. Silakan login dengan akun {mode} untuk membuka halaman ini.
@@ -240,7 +244,7 @@ export function AdminPage({ mode = 'admin' }: AdminPageProps) {
 
   // ── Shell ─────────────────────────────────────────────────────────────────
 
-  const isReady = Boolean(session && (role === 'admin' || role === 'owner'));
+  const isReady = Boolean(session && (role === 'admin' || role === 'owner' || role === 'pimpinan'));
 
   const handleAddProduct = () => {
     if (mode !== 'admin') return;
@@ -274,7 +278,10 @@ export function AdminPage({ mode = 'admin' }: AdminPageProps) {
         />
 
         <Suspense fallback={<SectionFallback />}>
-          {tab === 'dashboard' && (
+          {tab === 'dashboard' && mode === 'pimpinan' && (
+            <PimpinanDashboardSection />
+          )}
+          {tab === 'dashboard' && mode !== 'pimpinan' && (
             <DashboardSection isReady={isReady} onNavigate={setTab} />
           )}
           {mode === 'admin' && tab === 'inventory' && <InventorySection isReady={isReady} />}
