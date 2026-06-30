@@ -44,6 +44,8 @@ export type AdminOrder = {
   created_at: string;
   pickup_codes?: PickupCodeLike[] | PickupCodeLike | null;
   order_items?: Array<{
+    id: string;
+    product_id: string | null;
     product_name: string;
     sku: string;
     quantity: number;
@@ -127,4 +129,29 @@ export type CartItem = {
   product_image: string | null;
   variant_name: string | null;
   sku: string;
+};
+
+export type ReviewStatus = 'pending' | 'approved' | 'rejected';
+
+export type ProductReview = {
+  id: string;
+  product_id: string;
+  order_item_id: string;
+  user_id: string;
+  rating: number;
+  body: string | null;
+  status: ReviewStatus;
+  created_at: string;
+  updated_at?: string;
+  reviewer_name?: string | null;
+};
+
+export type ProductReviewSummary = {
+  avg_rating: number;
+  review_count: number;
+};
+
+export type ReviewFormInput = {
+  rating: number;
+  body: string;
 };

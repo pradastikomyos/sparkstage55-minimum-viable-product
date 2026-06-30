@@ -15,6 +15,8 @@ export type CheckoutResultOrder = {
   created_at: string;
   pickup_codes: PickupCodeLike[] | PickupCodeLike | null;
   order_items: Array<{
+    id: string;
+    product_id: string | null;
     product_name: string;
     sku: string;
     quantity: number;
@@ -65,7 +67,7 @@ export async function listAdminOrders() {
       picked_up_at,
       created_at,
       pickup_codes(code, qr_payload, verified_at),
-      order_items(product_name, sku, quantity, unit_price_idr, line_total_idr)
+      order_items(id, product_id, product_name, sku, quantity, unit_price_idr, line_total_idr)
     `)
     .order('created_at', { ascending: false })
     .limit(50);
@@ -85,7 +87,7 @@ export async function getOrderByPickupCode(code: string) {
       orders(
         id, invoice_number, customer_name, customer_email, customer_phone,
         status, payment_status, total_amount_idr, paid_at, picked_up_at, created_at,
-        order_items(product_name, sku, quantity, unit_price_idr, line_total_idr)
+        order_items(id, product_id, product_name, sku, quantity, unit_price_idr, line_total_idr)
       )
     `)
     .eq('code', normalizedCode)
@@ -121,7 +123,7 @@ export async function getOrderByInvoice(invoiceNumber: string) {
       paid_at,
       created_at,
       pickup_codes(code, qr_payload, verified_at),
-      order_items(product_name, sku, quantity, unit_price_idr, line_total_idr)
+      order_items(id, product_id, product_name, sku, quantity, unit_price_idr, line_total_idr)
     `)
     .eq('invoice_number', invoiceNumber)
     .maybeSingle();

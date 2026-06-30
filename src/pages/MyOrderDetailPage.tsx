@@ -1,6 +1,6 @@
 import { useEffect, useRef, useMemo, useState } from 'react';
 import { Link, Navigate, useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import QRCode from 'qrcode';
 import { getCheckoutResult } from '../services/commerce';
 import { getFirstPickupCode, isPickupReady, normalizeQrPayload } from '../utils/orderHelpers';
@@ -8,6 +8,8 @@ import { isSupabaseConfigured } from '../lib/supabase';
 import { useAuthUser, useCartSummary } from '../hooks/useCartSummary';
 import { useUIStore } from '../store/uiStore';
 import { AccountHeader } from '../widgets/account-header/AccountHeader';
+import { getMyReviewsForOrderItems, submitReview } from '../services/reviews';
+import { ReviewForm } from '../components/ui/ReviewForm';
 import styles from './MyOrderDetailPage.module.css';
 
 const IDR = new Intl.NumberFormat('id-ID', {
@@ -37,6 +39,8 @@ export function MyOrderDetailPage() {
   const { role, displayName, email } = useAuthUser();
   const { itemCount } = useCartSummary();
   const { setMenuOpen, setSearchOpen, setCartDrawerOpen } = useUIStore();
+  const queryClient = useQueryClient();
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const resultQuery = useQuery({
     queryKey: ['checkout-result', invoice],
@@ -49,6 +53,42 @@ export function MyOrderDetailPage() {
   const pickupCode = getFirstPickupCode(order?.pickup_codes);
   const pickupReady = order ? isPickupReady({ ...order, pickup_codes: pickupCode ? [pickupCode] : [] }) : false;
   const qrPayload = pickupCode ? normalizeQrPayload(pickupCode.qr_payload) : '';
+  const isPickedUp = order?.status === 'picked_up';
+
+  const orderItemIds = useMemo(() => {
+    return (order?.order_items ?? []).map((item) => item.id).filter(Boolean);
+  }, [order?.order_items]);
+
+  const reviewsQuery = useQuery({
+    queryKey: ['my-item-reviews', orderItemIds],
+    queryFn: () => getMyReviewsForOrderItems(orderItemIds),
+    enabled: isSupabaseConfigured && orderItemIds.length > 0 && isPickedUp,
+  });
+
+  const existingReviews = reviewsQuery.data ?? {};
+
+  const [activeReviewItem, setActiveReviewItem] = useState<string | null>(null);
+
+  const submitMutation = useMutation({
+    mutationFn: async ({ orderItemId, productId, rating, body }: {
+      orderItemId: string;
+      productId: string;
+      rating: number;
+      body: string;
+    }) => {
+      setSubmitError(null);
+      await submitReview({ order_item_id: orderItemId, product_id: productId, rating, body });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-item-reviews', orderItemIds] });
+      setActiveReviewItem(null);
+      setSubmitError(null);
+    },
+    onError: (error) => {
+      const message = error instanceof Error ? error.message : 'Gagal mengirim ulasan';
+      setSubmitError(message);
+    },
+  });
 
   const usernameUpper = useMemo(() => {
     if (displayName) return displayName.toUpperCase();
@@ -204,15 +244,64 @@ export function MyOrderDetailPage() {
               <section className={styles.card}>
                 <h2 className={styles.cardTitle}>Item Pesanan</h2>
                 <div className={styles.items}>
-                  {order.order_items.map((item, i) => (
-                    <div key={i} className={styles.item}>
-                      <div>
-                        <p className={styles.itemName}>{item.product_name}</p>
-                        <p className={styles.itemSku}>{item.sku} · ×{item.quantity}</p>
+                  {order.order_items.map((item, i) => {
+                    const existingReview = existingReviews[item.id];
+                    const showForm = activeReviewItem === item.id;
+                    return (
+                      <div key={item.id}>
+                        <div className={styles.item}>
+                          <div>
+                            <p className={styles.itemName}>{item.product_name}</p>
+                            <p className={styles.itemSku}>{item.sku} · ×{item.quantity}</p>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                            <p className={styles.itemPrice}>{IDR.format(item.line_total_idr)}</p>
+                            {isPickedUp && (
+                              existingReview ? (
+                                <span style={{ fontSize: 11, color: '#2e7d32', whiteSpace: 'nowrap' }}>
+                                  ✓ Sudah Diulas
+                                </span>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => { setActiveReviewItem(showForm ? null : item.id); setSubmitError(null); }}
+                                  style={{
+                                    background: 'none',
+                                    border: '1px solid #000',
+                                    padding: '4px 12px',
+                                    fontSize: 11,
+                                    fontWeight: 600,
+                                    cursor: 'pointer',
+                                    whiteSpace: 'nowrap',
+                                  }}
+                                >
+                                  {showForm ? 'Tutup' : 'Tulis Ulasan'}
+                                </button>
+                              )
+                            )}
+                          </div>
+                        </div>
+                        {showForm && (
+                          <div style={{ padding: '0 0 16px 0' }}>
+                            <ReviewForm
+                              productName={item.product_name}
+                              isSubmitting={submitMutation.isPending}
+                              error={submitError}
+                              onSubmit={(data) => {
+                                submitMutation.mutate({
+                                  orderItemId: item.id,
+                                  productId: item.product_id ?? '',
+                                  rating: data.rating,
+                                  body: data.body,
+                                });
+                              }}
+                              onCancel={() => { setActiveReviewItem(null); setSubmitError(null); }}
+                            />
+                          </div>
+                        )}
                       </div>
-                      <p className={styles.itemPrice}>{IDR.format(item.line_total_idr)}</p>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </section>
             ) : null}

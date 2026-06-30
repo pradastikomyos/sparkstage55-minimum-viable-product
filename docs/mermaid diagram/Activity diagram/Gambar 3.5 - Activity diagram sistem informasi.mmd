@@ -1,0 +1,34 @@
+%% Activity Diagram Umum Sistem Informasi - Spark Stage Fashion Commerce
+%% Menggambarkan alur besar pengguna dari membuka sistem sampai menyelesaikan aktivitas sesuai role.
+flowchart TB
+    Start((Start)):::startEnd --> BukaSistem[Membuka Sistem Informasi Spark Stage 55]:::activity
+    BukaSistem --> PilihAkses{Sudah memiliki akun?}:::decision
+
+    PilihAkses -- Belum --> Registrasi[Melakukan Registrasi]:::activity
+    Registrasi --> VerifikasiEmail[Melakukan Verifikasi Email]:::activity
+    VerifikasiEmail --> Login
+
+    PilihAkses -- Sudah --> Login[Melakukan Login]:::activity
+    Login --> Validasi[Validasi Kredensial dan Role Pengguna]:::activity
+    Validasi --> Valid{Data Valid?}:::decision
+
+    Valid -- Tidak --> TampilError[Tampilkan Pesan Error]:::activity
+    TampilError --> Login
+
+    Valid -- Ya --> Role{Role Pengguna?}:::decision
+
+    Role -- Pelanggan --> AlurPelanggan[Mengelola Belanja: Katalog, Keranjang, Checkout, Pembayaran, QR BOPIS]:::activity
+    Role -- Admin --> AlurAdmin[Mengelola Operasional: Produk, Pesanan, BOPIS, CMS, Laporan]:::activity
+    Role -- Owner --> AlurOwner[Melakukan Monitoring: Dashboard, Laporan, Payment Health]:::activity
+
+    AlurPelanggan --> CekLanjut{Lanjutkan Aktivitas?}:::decision
+    AlurAdmin --> CekLanjut
+    AlurOwner --> CekLanjut
+
+    CekLanjut -- Ya --> Role
+    CekLanjut -- Tidak --> Logout[Melakukan Logout]:::activity
+    Logout --> Selesai((Finish)):::startEnd
+
+    classDef startEnd fill:#111111,stroke:#111111,color:#ffffff;
+    classDef activity fill:#fffaf0,stroke:#8a6d3b,stroke-width:1.2px,color:#111111;
+    classDef decision fill:#ffffff,stroke:#111111,stroke-width:1.4px,color:#111111;

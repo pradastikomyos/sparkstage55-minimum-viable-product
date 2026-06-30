@@ -2,6 +2,8 @@ import { useQuery } from '@tanstack/react-query';
 import { requireSupabaseClient } from '../lib/supabase';
 
 export type MyOrderItem = {
+  id: string;
+  product_id: string | null;
   product_name: string;
   quantity: number;
   unit_price_idr: number;
@@ -48,7 +50,7 @@ export function useMyOrders(userId: string | null | undefined) {
           paid_at,
           created_at,
           pickup_codes(code, qr_payload),
-          order_items(product_name, quantity, unit_price_idr, line_total_idr)
+          order_items(id, product_id, product_name, sku, quantity, unit_price_idr, line_total_idr)
         `)
         .eq('user_id', userId)
         .order('created_at', { ascending: false });

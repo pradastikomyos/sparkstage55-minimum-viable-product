@@ -211,6 +211,19 @@
   }
 }
 
+.reviewSection {
+  margin-top: 48px;
+  padding-top: 24px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.reviewSectionTitle {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  margin: 0 0 8px 0;
+}
+
 @media (max-width: 768px) {
   .main {
     flex-direction: column;

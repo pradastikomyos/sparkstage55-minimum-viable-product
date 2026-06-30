@@ -83,7 +83,7 @@ Deno.serve(async (req) => {
         paid_at,
         created_at,
         pickup_codes(code, qr_payload, verified_at),
-        order_items(product_name, sku, quantity, unit_price_idr, line_total_idr)
+        order_items(id, product_id, product_name, sku, quantity, unit_price_idr, line_total_idr)
       `)
       .eq('invoice_number', invoiceNumber)
       .maybeSingle();

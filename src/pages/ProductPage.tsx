@@ -9,6 +9,9 @@ import { getProductBySlug } from '../services/commerce';
 import { addItemToCart, LOGIN_REQUIRED } from '../services/cart';
 import { useCartSummary } from '../hooks/useCartSummary';
 import { ProductHeader } from '../widgets/product-header/ProductHeader';
+import { getProductReviews, getProductReviewSummary } from '../services/reviews';
+import { ReviewList } from '../components/ui/ReviewList';
+import { StarRating } from '../components/ui/StarRating';
 import type { PublicProductWithVariants } from '../services/commerce';
 import styles from './ProductPage.module.css';
 
@@ -61,6 +64,20 @@ export function ProductPage() {
 
   // Variants from Supabase — sorted S/M/L/XL
   const SIZE_ORDER = ['S', 'M', 'L', 'XL', 'XXL'];
+  const productId = (productQuery.data as PublicProductWithVariants | null)?.id ?? null;
+
+  const reviewsQuery = useQuery({
+    queryKey: ['product-reviews', productId],
+    queryFn: () => getProductReviews(productId!),
+    enabled: isSupabaseConfigured && Boolean(productId),
+  });
+
+  const summaryQuery = useQuery({
+    queryKey: ['product-review-summary', productId],
+    queryFn: () => getProductReviewSummary(productId!),
+    enabled: isSupabaseConfigured && Boolean(productId),
+  });
+
   const variants = useMemo(() => {
     const raw = (productQuery.data as PublicProductWithVariants | null)?.product_variants ?? [];
     return [...raw].sort((a, b) => {
@@ -213,6 +230,15 @@ export function ProductPage() {
             <h1 className={styles.productTitle}>{resolved!.name.toUpperCase()}</h1>
             {resolved!.priceLabel ? <p className={styles.productPrice}>{resolved!.priceLabel}</p> : null}
 
+            {summaryQuery.data && summaryQuery.data.review_count > 0 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <StarRating mode="display" rating={Math.round(summaryQuery.data.avg_rating)} size={14} />
+                <span style={{ fontSize: 12, color: '#757575' }}>
+                  {summaryQuery.data.avg_rating.toFixed(1)} ({summaryQuery.data.review_count})
+                </span>
+              </div>
+            )}
+
             <hr className={styles.divider} />
 
             {resolved!.sku ? <p className={styles.productMeta}>SKU {resolved!.sku}</p> : null}
@@ -274,6 +300,15 @@ export function ProductPage() {
               <button>UKURAN PRODUK</button>
               <button>KOMPOSISI, PERAWATAN &amp; ASAL</button>
               <button>CEK KETERSEDIAAN TOKO</button>
+            </div>
+
+            <div className={styles.reviewSection}>
+              <h2 className={styles.reviewSectionTitle}>ULASAN PELANGGAN</h2>
+              <ReviewList
+                reviews={reviewsQuery.data ?? []}
+                summary={summaryQuery.data ?? { avg_rating: 0, review_count: 0 }}
+                isLoading={reviewsQuery.isLoading}
+              />
             </div>
           </div>
         </div>
