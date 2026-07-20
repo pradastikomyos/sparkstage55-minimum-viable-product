@@ -17,7 +17,7 @@ import {
   computeOrderStatusSummary,
   getPeriodRange,
 } from '../../services/reports';
-import { downloadCsv, buildReportRows } from '../../utils/reportExport';
+import { downloadCsv, buildReportRows, exportReportToPdf } from '../../utils/reportExport';
 
 type ReportsSectionProps = {
   isReady: boolean;
@@ -36,6 +36,7 @@ export function ReportsSection({ isReady }: ReportsSectionProps) {
   });
   const [bucket, setBucket] = useState<'day' | 'week' | 'month'>('day');
   const [chartMetric, setChartMetric] = useState<'revenue' | 'orders' | 'items'>('revenue');
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
 
   const { startDate, endDate } = getPeriodRange(period, customStart, customEnd);
 
@@ -63,6 +64,24 @@ export function ReportsSection({ isReady }: ReportsSectionProps) {
     const rows = buildReportRows(summary, timeSeries, topProducts, startDate, endDate);
     const filename = `spark-stage-sales-report-${startDate.slice(0, 10)}-to-${endDate.slice(0, 10)}.csv`;
     downloadCsv(filename, rows);
+  };
+
+  const handleExportPdf = () => {
+    setIsExportingPdf(true);
+
+    window.setTimeout(() => {
+      try {
+        exportReportToPdf({
+          summary,
+          timeSeries,
+          topProducts,
+          startDate,
+          endDate,
+        });
+      } finally {
+        setIsExportingPdf(false);
+      }
+    }, 0);
   };
 
   return (
@@ -108,6 +127,15 @@ export function ReportsSection({ isReady }: ReportsSectionProps) {
           >
             <AdminIcon icon={Download02Icon} size={16} />
             Export CSV
+          </button>
+          <button
+            className="admin-btn admin-btn--secondary"
+            type="button"
+            onClick={handleExportPdf}
+            disabled={isLoading || !summary || isExportingPdf}
+          >
+            <AdminIcon icon={Download02Icon} size={16} />
+            {isExportingPdf ? 'Membuat PDF...' : 'Export PDF'}
           </button>
         </div>
       </div>
