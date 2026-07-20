@@ -27,7 +27,7 @@ classDiagram
         +text slug
         +text sku
         +text description
-        +text category
+        +uuid category_id
         +product_status status
         +int base_price_idr
         +int sort_order
@@ -170,6 +170,7 @@ classDiagram
         +text link_url
         +boolean is_active
         +int sort_order
+        +uuid updated_by
         +timestamptz created_at
         +timestamptz updated_at
     }
@@ -190,6 +191,9 @@ classDiagram
     %% Relasi Antar Tabel (Entity Relationships)
     Profile "1" --> "*" Cart : memiliki
     Profile "1" --> "*" Order : membuat
+    Profile "1" --> "*" PickupCode : memverifikasi
+    Profile "1" --> "*" SiteAsset : memperbarui
+    Profile "1" --> "*" Banner : mengelola
 
     Product "1" --> "*" ProductVariant : memiliki
     Product "1" --> "*" ProductImage : memiliki
@@ -211,6 +215,3 @@ classDiagram
     OrderItem "1" --> "0..1" InventoryReservation : mengunci_stok
     Product "0..1" --> "*" InventoryReservation : produk
     ProductVariant "1" --> "*" InventoryReservation : varian
-
-    Profile "1" --> "*" PickupCode : memverifikasi
-    Profile "1" --> "*" SiteAsset : memperbarui
