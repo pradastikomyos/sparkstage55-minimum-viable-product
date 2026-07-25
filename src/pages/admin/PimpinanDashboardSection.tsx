@@ -18,13 +18,17 @@ import {
   Payment02Icon,
   PackageIcon,
 } from '@hugeicons/core-free-icons';
-import { AdminIcon } from '../../components/admin/AdminIcon';
+import { AdminDetailTop, AdminIcon } from '../../components/admin';
 import { NumberTicker } from '../../components/ui/number-ticker';
 import { MetricSkeleton } from '../../components/admin/AdminSkeleton';
 import { listAdminOrders, listAdminProducts } from '../../services/commerce';
 import { formatIdr } from '../../services/reports';
 
-export function PimpinanDashboardSection() {
+type PimpinanDashboardSectionProps = {
+  onOpenSidebar?: () => void;
+};
+
+export function PimpinanDashboardSection({ onOpenSidebar }: PimpinanDashboardSectionProps) {
   const productsQuery = useQuery({
     queryKey: ['admin-products'],
     queryFn: listAdminProducts,
@@ -72,6 +76,10 @@ export function PimpinanDashboardSection() {
 
   return (
     <section className="admin-detail-pane">
+      <div className="admin-mobile-shell-top">
+        <AdminDetailTop view="dashboard" onOpenSidebar={onOpenSidebar} />
+      </div>
+
       <div className="admin-dashboard">
         <div className="admin-dashboard-header" style={{ paddingTop: 8 }}>
           <div>

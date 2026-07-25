@@ -14,9 +14,10 @@ import type { AdminView } from './types';
 type DashboardSectionProps = {
   isReady: boolean;
   onNavigate: (view: AdminView) => void;
+  onOpenSidebar?: () => void;
 };
 
-export function DashboardSection({ isReady, onNavigate }: DashboardSectionProps) {
+export function DashboardSection({ isReady, onNavigate, onOpenSidebar }: DashboardSectionProps) {
   const productsQuery = useQuery({
     queryKey: ['admin-products'],
     queryFn: listAdminProducts,
@@ -41,7 +42,7 @@ export function DashboardSection({ isReady, onNavigate }: DashboardSectionProps)
 
   return (
     <section className="admin-detail-pane">
-      <AdminDetailTop view="dashboard" />
+      <AdminDetailTop view="dashboard" onOpenSidebar={onOpenSidebar} />
       <DashboardView
         totalProducts={productsQuery.data?.length ?? 0}
         activeProducts={activeProducts}

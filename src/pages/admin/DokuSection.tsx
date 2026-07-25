@@ -16,9 +16,10 @@ import { createDokuCheckout, listAdminProducts } from '../../services/commerce';
 
 type DokuSectionProps = {
   isReady: boolean;
+  onOpenSidebar?: () => void;
 };
 
-export function DokuSection({ isReady }: DokuSectionProps) {
+export function DokuSection({ isReady, onOpenSidebar }: DokuSectionProps) {
   const queryClient = useQueryClient();
 
   const [checkoutCustomer, setCheckoutCustomer] = useState({
@@ -65,7 +66,7 @@ export function DokuSection({ isReady }: DokuSectionProps) {
 
   return (
     <section className="admin-detail-pane">
-      <AdminDetailTop view="doku" />
+      <AdminDetailTop view="doku" onOpenSidebar={onOpenSidebar} />
       <DokuCheckoutCard
         customer={checkoutCustomer}
         error={checkoutMutation.error}

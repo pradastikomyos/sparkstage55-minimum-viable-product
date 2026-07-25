@@ -13,9 +13,10 @@ import {
 
 type PaymentHealthSectionProps = {
   isReady: boolean;
+  onOpenSidebar?: () => void;
 };
 
-export function PaymentHealthSection({ isReady }: PaymentHealthSectionProps) {
+export function PaymentHealthSection({ isReady, onOpenSidebar }: PaymentHealthSectionProps) {
   const queryClient = useQueryClient();
   const [selectedAttemptId, setSelectedAttemptId] = useState<string | null>(null);
   const [manualInvoice, setManualInvoice] = useState('');
@@ -59,7 +60,7 @@ export function PaymentHealthSection({ isReady }: PaymentHealthSectionProps) {
 
   return (
     <section className="admin-detail-pane">
-      <AdminDetailTop view="payments" />
+      <AdminDetailTop view="payments" onOpenSidebar={onOpenSidebar} />
       <PaymentHealthCard
         attempts={attempts}
         events={events}

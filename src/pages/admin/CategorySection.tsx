@@ -17,9 +17,10 @@ import {
 
 type CategorySectionProps = {
   isReady: boolean;
+  onOpenSidebar?: () => void;
 };
 
-export function CategorySection({ isReady }: CategorySectionProps) {
+export function CategorySection({ isReady, onOpenSidebar }: CategorySectionProps) {
   const queryClient = useQueryClient();
   const [newName, setNewName] = useState('');
   const [createError, setCreateError] = useState('');
@@ -89,7 +90,7 @@ export function CategorySection({ isReady }: CategorySectionProps) {
 
   return (
     <section className="admin-detail-pane">
-      <AdminDetailTop view="categories" />
+      <AdminDetailTop view="categories" onOpenSidebar={onOpenSidebar} />
 
       <div className="admin-detail-card" style={{ margin: '0 24px' }}>
         <p className="admin-eyebrow">CMS</p>

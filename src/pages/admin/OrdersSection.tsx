@@ -38,9 +38,10 @@ const TABS: { key: OrderTabKey; label: string }[] = [
 
 type OrdersSectionProps = {
   isReady: boolean;
+  onOpenSidebar?: () => void;
 };
 
-export function OrdersSection({ isReady }: OrdersSectionProps) {
+export function OrdersSection({ isReady, onOpenSidebar }: OrdersSectionProps) {
   const [activeTab, setActiveTab] = useState<OrderTabKey>('pending_pickup');
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
@@ -92,7 +93,7 @@ export function OrdersSection({ isReady }: OrdersSectionProps) {
 
   return (
     <section className="admin-detail-pane">
-      <AdminDetailTop view="orders" />
+      <AdminDetailTop view="orders" onOpenSidebar={onOpenSidebar} />
       <div className="admin-orders-tabs">
         {TABS.map(({ key, label }) => (
           <button

@@ -8,7 +8,11 @@ import { AdminDetailTop, OrderPreviewModal, PickupVerificationCard } from '../..
 import { QrScannerModal } from '../../components/admin/QrScannerModal';
 import { getOrderByPickupCode, normalizePickupCodeInput, verifyPickupCode } from '../../services/commerce';
 
-export function BopisSection() {
+type BopisSectionProps = {
+  onOpenSidebar?: () => void;
+};
+
+export function BopisSection({ onOpenSidebar }: BopisSectionProps) {
   const queryClient = useQueryClient();
   const [pickupCode, setPickupCode] = useState('');
   const [isScannerOpen, setIsScannerOpen] = useState(false);
@@ -82,7 +86,7 @@ export function BopisSection() {
 
   return (
     <section className="admin-detail-pane">
-      <AdminDetailTop view="bopis" />
+      <AdminDetailTop view="bopis" onOpenSidebar={onOpenSidebar} />
 
       {successMessage ? <div className="admin-bopis-feedback admin-bopis-feedback--success">{successMessage}</div> : null}
 

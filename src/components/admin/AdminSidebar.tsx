@@ -27,6 +27,8 @@ type AdminSidebarProps = {
   onSignOut: () => void;
   mode?: 'admin' | 'owner' | 'pimpinan';
   allowedViews?: readonly AdminView[];
+  onClose?: () => void;
+  isMobileDrawer?: boolean;
 };
 
 const NAV_ITEMS: { view: AdminView; icon: any; label: string }[] = [
@@ -50,13 +52,44 @@ export function AdminSidebar({
   onSignOut,
   mode = 'admin',
   allowedViews,
+  onClose,
+  isMobileDrawer = false,
 }: AdminSidebarProps) {
   const visibleNavItems = allowedViews
     ? NAV_ITEMS.filter((item) => allowedViews.includes(item.view))
     : NAV_ITEMS;
 
+  const handleAddProductClick = () => {
+    onAddProduct();
+    onClose?.();
+  };
+
+  const handleChangeView = (view: AdminView) => {
+    onChangeView(view);
+    onClose?.();
+  };
+
+  const handleSignOutClick = () => {
+    onClose?.();
+    onSignOut();
+  };
+
   return (
-    <aside className="admin-sidebar">
+    <aside className={`admin-sidebar ${isMobileDrawer ? 'admin-sidebar--drawer' : ''}`}>
+      {isMobileDrawer && (
+        <div className="admin-sidebar-drawer-header">
+          <strong>Menu Admin</strong>
+          <button
+            className="admin-sidebar-close"
+            type="button"
+            aria-label="Tutup menu admin"
+            onClick={onClose}
+          >
+            ×
+          </button>
+        </div>
+      )}
+
       <section className="admin-user-card">
         <div className="admin-avatar">
           <AdminIcon icon={UserCircleIcon} size={28} />
@@ -74,7 +107,7 @@ export function AdminSidebar({
       </label>
 
       {mode === 'admin' && (
-        <button className="admin-compose" type="button" onClick={onAddProduct}>
+        <button className="admin-compose" type="button" onClick={handleAddProductClick}>
           <AdminIcon icon={Add01Icon} size={20} />
           Add product
         </button>
@@ -87,7 +120,7 @@ export function AdminSidebar({
             key={view}
             className={currentView === view ? 'is-current' : ''}
             type="button"
-            onClick={() => onChangeView(view)}
+            onClick={() => handleChangeView(view)}
           >
             <span><AdminIcon icon={icon} size={18} /> {label}</span>
           </button>
@@ -104,7 +137,7 @@ export function AdminSidebar({
         <span>Total stock available</span>
       </div>
 
-      <button className="admin-support-link" type="button" onClick={onSignOut}>
+      <button className="admin-support-link" type="button" onClick={handleSignOutClick}>
         <span><AdminIcon icon={Logout03Icon} size={19} /> Sign out</span>
       </button>
     </aside>

@@ -21,9 +21,10 @@ import { downloadCsv, buildReportRows, exportReportToPdf } from '../../utils/rep
 
 type ReportsSectionProps = {
   isReady: boolean;
+  onOpenSidebar?: () => void;
 };
 
-export function ReportsSection({ isReady }: ReportsSectionProps) {
+export function ReportsSection({ isReady, onOpenSidebar }: ReportsSectionProps) {
   const [period, setPeriod] = useState<'today' | '7d' | '30d' | 'this_month' | 'custom'>('30d');
   const [customStart, setCustomStart] = useState(() => {
     const d = new Date();
@@ -86,7 +87,7 @@ export function ReportsSection({ isReady }: ReportsSectionProps) {
 
   return (
     <section className="admin-detail-pane">
-      <AdminDetailTop view="reports" />
+      <AdminDetailTop view="reports" onOpenSidebar={onOpenSidebar} />
       <div className="admin-reports">
         <ReportFilters
           period={period}

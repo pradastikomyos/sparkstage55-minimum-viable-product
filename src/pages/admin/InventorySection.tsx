@@ -13,6 +13,7 @@
 import { FormEvent, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
+  AdminDetailTop,
   AdminBreadcrumb,
   AdminProductListPane,
   InventoryDetailCard,
@@ -48,9 +49,10 @@ const initialForm: ProductFormInput = {
 type InventorySectionProps = {
   /** Whether the parent auth guard has confirmed admin role. */
   isReady: boolean;
+  onOpenSidebar?: () => void;
 };
 
-export function InventorySection({ isReady }: InventorySectionProps) {
+export function InventorySection({ isReady, onOpenSidebar }: InventorySectionProps) {
   const queryClient = useQueryClient();
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [productForm, setProductForm] = useState<ProductFormInput>(initialForm);
@@ -142,6 +144,10 @@ export function InventorySection({ isReady }: InventorySectionProps) {
 
   return (
     <>
+      <div className="admin-mobile-shell-top">
+        <AdminDetailTop view="inventory" onOpenSidebar={onOpenSidebar} />
+      </div>
+
       <AdminProductListPane
         products={productsQuery.data}
         selectedProductId={selectedProduct?.id}
@@ -154,7 +160,7 @@ export function InventorySection({ isReady }: InventorySectionProps) {
         formatCurrency={(v) => currency.format(v)}
       />
 
-      <section className="admin-detail-pane">
+      <section className="admin-detail-pane admin-detail-pane--inventory">
         <AdminBreadcrumb currentView="inventory" />
         <InventoryDetailCard
           product={selectedProduct}

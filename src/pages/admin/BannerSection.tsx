@@ -17,6 +17,7 @@ import {
 
 type BannerSectionProps = {
   isReady: boolean;
+  onOpenSidebar?: () => void;
 };
 
 const PAGE_LABELS: Record<BannerPage, string> = {
@@ -37,7 +38,7 @@ const EMPTY_FORM = {
   sort_order: 0,
 };
 
-export function BannerSection({ isReady }: BannerSectionProps) {
+export function BannerSection({ isReady, onOpenSidebar }: BannerSectionProps) {
   const queryClient = useQueryClient();
   const [form, setForm] = useState({ ...EMPTY_FORM });
   const [formError, setFormError] = useState('');
@@ -93,7 +94,7 @@ export function BannerSection({ isReady }: BannerSectionProps) {
 
   return (
     <section className="admin-detail-pane">
-      <AdminDetailTop view="banners" />
+      <AdminDetailTop view="banners" onOpenSidebar={onOpenSidebar} />
 
       <div className="admin-detail-card" style={{ margin: '0 24px' }}>
         <p className="admin-eyebrow">CMS</p>

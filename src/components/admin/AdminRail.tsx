@@ -79,15 +79,32 @@ export function AdminRail({
   currentView,
   onChangeView,
   allowedViews,
+  onToggleSidebar,
+  isSidebarOpen = false,
 }: {
   currentView: AdminView;
   onChangeView: (view: AdminView) => void;
   allowedViews?: readonly AdminView[];
+  onToggleSidebar?: () => void;
+  isSidebarOpen?: boolean;
 }) {
   const visibleTabs = filterTabs(RAIL_TABS, allowedViews);
 
   return (
-    <aside className="admin-rail" aria-label="Primary admin tools">
+    <aside className={`admin-rail${isSidebarOpen ? ' is-open' : ''}`} aria-label="Primary admin tools">
+      {onToggleSidebar && (
+        <button
+          className={`admin-rail-menu${isSidebarOpen ? ' is-active' : ''}`}
+          type="button"
+          aria-label={isSidebarOpen ? 'Tutup sidebar admin' : 'Buka sidebar admin'}
+          aria-expanded={isSidebarOpen}
+          onClick={onToggleSidebar}
+        >
+          <span />
+          <span />
+          <span />
+        </button>
+      )}
       <div className="admin-rail-logo">S</div>
       {visibleTabs.map(({ view, icon, label, className }) => (
         <button
@@ -98,7 +115,10 @@ export function AdminRail({
           title={label}
           onClick={() => onChangeView(view)}
         >
-          <HugeiconsIcon icon={icon} size={22} strokeWidth={1.5} />
+          <span className="admin-rail-button__icon" aria-hidden="true">
+            <HugeiconsIcon icon={icon} size={22} strokeWidth={1.5} />
+          </span>
+          <span className="admin-rail-button__label">{label}</span>
         </button>
       ))}
     </aside>

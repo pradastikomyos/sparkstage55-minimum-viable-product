@@ -16,10 +16,9 @@
  */
 
 import { lazy, Suspense, useEffect, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Session } from '@supabase/supabase-js';
-import { AdminRail, AdminMobileNav, AdminSidebar, CommandPalette, AdminBreadcrumb } from '../components/admin';
+import { AdminRail, AdminMobileNav, CommandPalette, AdminBreadcrumb } from '../components/admin';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import { getCurrentUserRole } from '../services/auth';
 import { ADMIN_VIEWS, PIMPINAN_VIEWS, type AdminView } from './admin/types';
@@ -78,6 +77,7 @@ export function AdminPage({ mode = 'admin' }: AdminPageProps) {
   const [session, setSession] = useState<Session | null>(null);
   const [role, setRole] = useState<'admin' | 'owner' | 'pimpinan' | 'customer' | null>(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const navigate = useNavigate();
   const { tab: rawTab } = useParams<{ tab: string }>();
@@ -92,19 +92,11 @@ export function AdminPage({ mode = 'admin' }: AdminPageProps) {
     if (!(allowedViews as readonly string[]).includes(next)) return;
     navigate(`${basePath}/${next}`, { replace: true });
   };
-  const totalStockQuery = useQuery({
-    queryKey: ['admin-total-stock'],
-    enabled: Boolean(session && (role === 'admin' || role === 'owner' || role === 'pimpinan')),
-    queryFn: async () => {
-      // TODO: Kiro — verifikasi RLS allow admin read all variants.
-      if (!supabase) return 0;
-      const { data, error } = await supabase
-        .from('product_variants')
-        .select('stock_quantity');
-      if (error) return 0;
-      return (data ?? []).reduce((sum, row) => sum + Number((row as { stock_quantity?: number }).stock_quantity ?? 0), 0);
-    },
-  });
+  const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
+  const handleRailChangeView = (next: AdminView) => {
+    setIsSidebarOpen(true);
+    setTab(next);
+  };
 
   // ── Auth ──────────────────────────────────────────────────────────────────
 
@@ -185,6 +177,10 @@ export function AdminPage({ mode = 'admin' }: AdminPageProps) {
         event.preventDefault();
         setCommandOpen((prev) => !prev);
       }
+
+      if (event.key === 'Escape') {
+        setIsSidebarOpen(false);
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -246,36 +242,18 @@ export function AdminPage({ mode = 'admin' }: AdminPageProps) {
 
   const isReady = Boolean(session && (role === 'admin' || role === 'owner' || role === 'pimpinan'));
 
-  const handleAddProduct = () => {
-    if (mode !== 'admin') return;
-    setTab('inventory');
-    // Give React one tick to mount InventorySection before scrolling.
-    setTimeout(
-      () => document.getElementById('admin-add-product')?.scrollIntoView({ behavior: 'smooth' }),
-      100,
-    );
-  };
-
-  const signOut = async () => {
-    await supabase?.auth.signOut();
-    window.location.href = '/';
-  };
-
   return (
     <main className="admin-app">
-      <div className={`admin-window ${tab !== 'inventory' ? 'is-wide' : ''}`}>
-        <AdminRail currentView={tab} onChangeView={setTab} allowedViews={allowedViews} />
-
-        <AdminSidebar
-          email={session.user.email}
-          totalStock={totalStockQuery.data ?? 0}
-          currentView={tab}
-          onChangeView={setTab}
-          onAddProduct={handleAddProduct}
-          onSignOut={signOut}
-          mode={mode}
-          allowedViews={allowedViews}
-        />
+      <div className={`admin-window ${tab === 'inventory' ? 'is-inventory' : 'is-detail'} ${isSidebarOpen ? 'is-sidebar-open' : 'is-sidebar-closed'}`}>
+        <aside className={`admin-nav-shell${isSidebarOpen ? ' is-open' : ''}`} aria-label="Primary admin navigation">
+          <AdminRail
+            currentView={tab}
+            onChangeView={handleRailChangeView}
+            allowedViews={allowedViews}
+            onToggleSidebar={toggleSidebar}
+            isSidebarOpen={isSidebarOpen}
+          />
+        </aside>
 
         <Suspense fallback={<SectionFallback />}>
           {tab === 'dashboard' && mode === 'pimpinan' && (

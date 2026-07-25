@@ -17,6 +17,7 @@ import { uploadSiteAsset } from '../../services/uploadSiteAsset';
 
 type CmsSectionProps = {
   isReady: boolean;
+  onOpenSidebar?: () => void;
 };
 
 /** Group label map for slot prefixes */
@@ -43,7 +44,7 @@ function groupAssets(assets: SiteAsset[]): Map<string, SiteAsset[]> {
   return map;
 }
 
-export function CmsSection({ isReady }: CmsSectionProps) {
+export function CmsSection({ isReady, onOpenSidebar }: CmsSectionProps) {
   const queryClient = useQueryClient();
 
   const assetsQuery = useQuery({
@@ -85,7 +86,7 @@ export function CmsSection({ isReady }: CmsSectionProps) {
 
   return (
     <section className="admin-detail-pane">
-      <AdminDetailTop view="cms" />
+      <AdminDetailTop view="cms" onOpenSidebar={onOpenSidebar} />
 
       <div className="admin-detail-card" style={{ margin: '0 24px' }}>
         <p className="admin-eyebrow">CMS</p>
