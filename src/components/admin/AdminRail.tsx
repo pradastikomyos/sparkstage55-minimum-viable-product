@@ -4,9 +4,9 @@ import {
   ImageAdd02Icon,
   Invoice03Icon,
   LayersLogoIcon,
+  Logout03Icon,
   Payment02Icon,
   QrCodeScanIcon,
-  Settings02Icon,
   ShoppingBag03Icon,
   Tag01Icon,
 } from '@hugeicons/core-free-icons';
@@ -39,7 +39,6 @@ const RAIL_TABS: AdminNavItem[] = [
   { view: 'cms', icon: ImageAdd02Icon, label: 'CMS Assets' },
   { view: 'banners', icon: LayersLogoIcon, label: 'Banner Manager' },
   { view: 'categories', icon: Tag01Icon, label: 'Kategori Produk' },
-  { view: 'doku', icon: Settings02Icon, label: 'Settings', className: 'admin-rail-bottom' },
 ];
 
 function filterTabs(tabs: AdminNavItem[], allowedViews?: readonly AdminView[]) {
@@ -81,31 +80,41 @@ export function AdminRail({
   allowedViews,
   onToggleSidebar,
   isSidebarOpen = false,
+  onSignOut,
 }: {
   currentView: AdminView;
   onChangeView: (view: AdminView) => void;
   allowedViews?: readonly AdminView[];
   onToggleSidebar?: () => void;
   isSidebarOpen?: boolean;
+  onSignOut?: () => void;
 }) {
   const visibleTabs = filterTabs(RAIL_TABS, allowedViews);
 
   return (
     <aside className={`admin-rail${isSidebarOpen ? ' is-open' : ''}`} aria-label="Primary admin tools">
-      {onToggleSidebar && (
-        <button
-          className={`admin-rail-menu${isSidebarOpen ? ' is-active' : ''}`}
-          type="button"
-          aria-label={isSidebarOpen ? 'Tutup sidebar admin' : 'Buka sidebar admin'}
-          aria-expanded={isSidebarOpen}
-          onClick={onToggleSidebar}
-        >
-          <span />
-          <span />
-          <span />
-        </button>
-      )}
-      <div className="admin-rail-logo">S</div>
+      <div className="admin-rail-header">
+        {onToggleSidebar && (
+          <button
+            className={`admin-rail-menu${isSidebarOpen ? ' is-active' : ''}`}
+            type="button"
+            aria-label={isSidebarOpen ? 'Tutup sidebar admin' : 'Buka sidebar admin'}
+            aria-expanded={isSidebarOpen}
+            onClick={onToggleSidebar}
+          >
+            <span />
+            <span />
+            <span />
+          </button>
+        )}
+        <div className="admin-rail-logo" aria-label="Spark Stage">
+          <img
+            src="/logo/logo-spark-wordmark.png"
+            alt="Spark Stage"
+            className="admin-rail-logo__img"
+          />
+        </div>
+      </div>
       {visibleTabs.map(({ view, icon, label, className }) => (
         <button
           key={view}
@@ -121,6 +130,21 @@ export function AdminRail({
           <span className="admin-rail-button__label">{label}</span>
         </button>
       ))}
+
+      {onSignOut && (
+        <button
+          className="admin-rail-button admin-rail-bottom"
+          type="button"
+          aria-label="Sign out"
+          title="Sign out"
+          onClick={onSignOut}
+        >
+          <span className="admin-rail-button__icon" aria-hidden="true">
+            <HugeiconsIcon icon={Logout03Icon} size={22} strokeWidth={1.5} />
+          </span>
+          <span className="admin-rail-button__label">Sign Out</span>
+        </button>
+      )}
     </aside>
   );
 }

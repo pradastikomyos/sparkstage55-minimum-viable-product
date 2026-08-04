@@ -11,14 +11,14 @@
  *  4. Render the correct section component.
  *
  * All data fetching, mutations, and local state live inside the section
- * components (InventorySection, OrdersSection, BopisSection, DokuSection,
+ * components (InventorySection, OrdersSection, BopisSection,
  * DashboardSection). This file stays intentionally thin.
  */
 
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Session } from '@supabase/supabase-js';
-import { AdminRail, AdminMobileNav, CommandPalette, AdminBreadcrumb } from '../components/admin';
+import { AdminRail, AdminMobileNav, CommandPalette } from '../components/admin';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import { getCurrentUserRole } from '../services/auth';
 import { ADMIN_VIEWS, PIMPINAN_VIEWS, type AdminView } from './admin/types';
@@ -252,6 +252,10 @@ export function AdminPage({ mode = 'admin' }: AdminPageProps) {
             allowedViews={allowedViews}
             onToggleSidebar={toggleSidebar}
             isSidebarOpen={isSidebarOpen}
+            onSignOut={async () => {
+              await supabase?.auth.signOut();
+              window.location.href = '/';
+            }}
           />
         </aside>
 

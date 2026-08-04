@@ -1,14 +1,41 @@
+/* ── Rail header: toggle + logo ─────────────────────────────────────────── */
+.admin-rail-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 4px 16px;
+  border-bottom: 1px solid #ececec;
+  margin-bottom: 4px;
+  min-height: 52px;
+  overflow: hidden;
+}
+
 .admin-rail-logo {
-  display: grid;
-  place-items: center;
-  width: 38px;
-  height: 38px;
-  margin: 0 auto 18px;
-  background: #050505;
-  border-radius: 10px;
-  color: #fff;
-  font-size: 18px;
-  font-weight: 700;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  text-decoration: none;
+  flex: 1;
+  min-width: 0;
+  opacity: 0;
+  max-width: 0;
+  transition:
+    max-width 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 200ms ease;
+}
+
+.admin-rail.is-open .admin-rail-logo {
+  opacity: 1;
+  max-width: 140px;
+}
+
+.admin-rail-logo__img {
+  display: block;
+  height: 24px;
+  width: auto;
+  max-width: 120px;
+  object-fit: contain;
+  object-position: left center;
 }
 
 .admin-rail-button {
@@ -87,9 +114,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 38px;
-  height: 38px;
-  margin: 0 auto 6px;
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  margin: 0;
   padding: 0;
   background: transparent;
   border: 0;
