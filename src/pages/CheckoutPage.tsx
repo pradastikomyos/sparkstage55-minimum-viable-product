@@ -16,7 +16,7 @@ const IDR = new Intl.NumberFormat('id-ID', {
 });
 
 const PICKUP_LOCATIONS = [
-  { id: 'store-jakarta', name: 'SPARK Store Jakarta - Mall Plaza Senayan' },
+  { id: 'store-jakarta', name: 'SPARK Store - Jl. Flores No.8, Citarum, Kec. Bandung Wetan, Kota Bandung, Jawa Barat 40115' },
   { id: 'store-bandung', name: 'SPARK Store Bandung - Paris Van Java' },
   { id: 'store-surabaya', name: 'SPARK Store Surabaya - Tunjungan Plaza' },
 ];
