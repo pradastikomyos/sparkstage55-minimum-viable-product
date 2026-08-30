@@ -115,3 +115,4 @@ as $$
       and product_id = target_product_id
   );
 $$;
+;

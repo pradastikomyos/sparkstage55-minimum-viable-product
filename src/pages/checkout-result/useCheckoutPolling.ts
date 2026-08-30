@@ -1,100 +1,115 @@
-import { useEffect, useRef, useState } from 'react';
-import { useMutation, useQueryClient, type UseQueryResult } from '@tanstack/react-query';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useMutation, type UseQueryResult } from '@tanstack/react-query';
 import { reconcileDokuPayment, type CheckoutResultResponse } from '../../services/checkout';
+import {
+  CHECKOUT_FALLBACK_AFTER_MS,
+  getCheckoutPollingState,
+  getDbPollOffset,
+  getReconcileOffset,
+} from './paymentPollingPolicy';
 
-const POLL_DELAYS = [0, 3_000, 6_000, 10_000] as const;
-const MAX_POLLS = 5;
-const AUTO_RECONCILE_AFTER_POLLS = 2;
-const SHOW_FALLBACK_AFTER_MS = 20_000;
-
-type OrderQueryResult = Pick<UseQueryResult<CheckoutResultResponse, Error>, 'data' | 'isLoading' | 'isFetching' | 'isError' | 'refetch'>;
+type OrderQueryResult = Pick<UseQueryResult<CheckoutResultResponse, Error>, 'data' | 'isLoading' | 'isFetching' | 'refetch'>;
 
 export function useCheckoutPolling({ invoice, orderQuery }: { invoice: string | null; orderQuery: OrderQueryResult }) {
   const [pollCount, setPollCount] = useState(0);
-  const [elapsedMs, setElapsedMs] = useState(0);
-  const startTimeRef = useRef(Date.now());
-  const queryClient = useQueryClient();
-  const autoReconcileTriggered = useRef(false);
+  const [reconcileAttemptCount, setReconcileAttemptCount] = useState(0);
+  const [lastCheckedAt, setLastCheckedAt] = useState<Date | null>(null);
+  const [fallbackReached, setFallbackReached] = useState(false);
+  const [fallbackCycle, setFallbackCycle] = useState(0);
+  const observationStartedAtRef = useRef(Date.now());
+  const dbPollingStartedAtRef = useRef(Date.now());
+  const lastFocusRefreshAtRef = useRef(0);
+  const { data, isLoading, isFetching, refetch } = orderQuery;
+  const pollingState = getCheckoutPollingState(data?.kind, data?.order?.status);
+  const isPending = pollingState === 'pending';
 
   useEffect(() => {
-    startTimeRef.current = Date.now();
-    setElapsedMs(0);
-    const interval = window.setInterval(() => {
-      setElapsedMs(Date.now() - startTimeRef.current);
-    }, 1000);
-    return () => window.clearInterval(interval);
+    const startedAt = Date.now();
+    observationStartedAtRef.current = startedAt;
+    dbPollingStartedAtRef.current = startedAt;
+    setPollCount(0);
+    setReconcileAttemptCount(0);
+    setLastCheckedAt(null);
+    setFallbackReached(false);
   }, [invoice]);
 
   useEffect(() => {
+    setFallbackReached(false);
     if (!invoice) return;
-    if (orderQuery.isLoading || orderQuery.isFetching || orderQuery.isError) return;
-    const kind = orderQuery.data?.kind;
-    const status = orderQuery.data?.order?.status;
-    if (kind === 'not_found' || kind === 'not_owner') return;
-    if (status && status !== 'pending_payment') return;
-    if (pollCount >= MAX_POLLS) return;
+    const timeoutId = window.setTimeout(() => setFallbackReached(true), CHECKOUT_FALLBACK_AFTER_MS);
+    return () => window.clearTimeout(timeoutId);
+  }, [invoice, fallbackCycle]);
 
-    let cancelled = false;
-    const delay = POLL_DELAYS[Math.min(pollCount, POLL_DELAYS.length - 1)];
+  // Absolute offsets keep unrelated renders from postponing checks indefinitely.
+  useEffect(() => {
+    if (!invoice || !isPending || isLoading || isFetching) return;
+    const offset = getDbPollOffset(pollCount);
+    if (offset === null) return;
+    const dueAt = dbPollingStartedAtRef.current + offset;
     const timeoutId = window.setTimeout(() => {
-      if (cancelled) return;
       setPollCount((current) => current + 1);
-      void orderQuery.refetch();
-    }, delay);
+      void refetch().finally(() => setLastCheckedAt(new Date()));
+    }, Math.max(0, dueAt - Date.now()));
 
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timeoutId);
-    };
-  }, [orderQuery, pollCount]);
+    return () => window.clearTimeout(timeoutId);
+  }, [invoice, isPending, isLoading, isFetching, pollCount, refetch]);
 
   const reconcileMutation = useMutation({
     mutationFn: () => reconcileDokuPayment({ invoice_number: invoice ?? '' }),
-    onSuccess: async () => {
-      resetPolling();
+    onSettled: async () => {
+      setLastCheckedAt(new Date());
       if (!invoice) return;
-      await queryClient.invalidateQueries({ queryKey: ['checkout-result', invoice] });
-      await orderQuery.refetch();
+      await refetch();
     },
   });
+  const reconcileIsPending = reconcileMutation.isPending;
 
+  // Provider reconciliation starts at 60 seconds and retries on a bounded
+  // absolute schedule, including after transient failures or PENDING responses.
   useEffect(() => {
-    if (!invoice) return;
-    if (
-      pollCount >= AUTO_RECONCILE_AFTER_POLLS &&
-      !autoReconcileTriggered.current &&
-      !reconcileMutation.isPending &&
-      !reconcileMutation.isSuccess &&
-      invoice &&
-      orderQuery.data?.kind !== 'not_found' &&
-      orderQuery.data?.kind !== 'not_owner' &&
-      (!orderQuery.data?.order || orderQuery.data.order.status === 'pending_payment')
-    ) {
-      autoReconcileTriggered.current = true;
+    if (!invoice || !isPending || reconcileIsPending) return;
+    const offset = getReconcileOffset(reconcileAttemptCount);
+    if (offset === null) return;
+    const dueAt = observationStartedAtRef.current + offset;
+    const timeoutId = window.setTimeout(() => {
+      setReconcileAttemptCount((current) => current + 1);
       reconcileMutation.mutate();
-    }
-  }, [pollCount, invoice, orderQuery.data, reconcileMutation]);
+    }, Math.max(0, dueAt - Date.now()));
 
-  const resetPolling = () => {
+    return () => window.clearTimeout(timeoutId);
+  }, [invoice, isPending, reconcileAttemptCount, reconcileIsPending, reconcileMutation.mutate]);
+
+  // Background tabs throttle timers, so refresh when the customer returns.
+  useEffect(() => {
+    if (!invoice || !isPending) return;
+    const refreshWhenActive = () => {
+      if (document.visibilityState !== 'visible') return;
+      const now = Date.now();
+      if (now - lastFocusRefreshAtRef.current < 1_000) return;
+      lastFocusRefreshAtRef.current = now;
+      void refetch().finally(() => setLastCheckedAt(new Date()));
+    };
+
+    window.addEventListener('focus', refreshWhenActive);
+    document.addEventListener('visibilitychange', refreshWhenActive);
+    return () => {
+      window.removeEventListener('focus', refreshWhenActive);
+      document.removeEventListener('visibilitychange', refreshWhenActive);
+    };
+  }, [invoice, isPending, refetch]);
+
+  const resetPolling = useCallback(() => {
+    dbPollingStartedAtRef.current = Date.now();
     setPollCount(0);
-    startTimeRef.current = Date.now();
-    setElapsedMs(0);
-    autoReconcileTriggered.current = false;
-  };
-
-  const isPending = Boolean(
-    orderQuery.data?.kind !== 'not_found' &&
-      orderQuery.data?.kind !== 'not_owner' &&
-      (!orderQuery.data?.order || orderQuery.data.order.status === 'pending_payment'),
-  );
-
-  const shouldShowFallback = isPending && (pollCount >= MAX_POLLS || elapsedMs >= SHOW_FALLBACK_AFTER_MS);
+    setFallbackCycle((current) => current + 1);
+  }, []);
 
   return {
     pollCount,
-    isPollingExhausted: shouldShowFallback,
+    reconcileAttemptCount,
+    lastCheckedAt,
+    isPollingExhausted: isPending && fallbackReached,
     reconcileMutation,
     resetPolling,
-    elapsedMs,
   };
 }

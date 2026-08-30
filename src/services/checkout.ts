@@ -1,4 +1,5 @@
 import { requireSupabaseClient } from '../lib/supabase';
+import { FunctionsHttpError } from '@supabase/supabase-js';
 import { PaymentStatus } from '../types/commerce';
 import type { CheckoutResultOrder } from './orders';
 
@@ -25,6 +26,31 @@ export type DokuReconcileResponse = {
 
 export type { CheckoutResultOrder } from './orders';
 
+function getErrorMessage(payload: unknown): string | null {
+  if (!payload || typeof payload !== 'object') return null;
+  const body = payload as Record<string, unknown>;
+  for (const key of ['error', 'message', 'error_description', 'details']) {
+    if (typeof body[key] === 'string' && body[key].trim()) return body[key];
+  }
+  return null;
+}
+
+async function normalizeFunctionError(error: unknown): Promise<Error> {
+  if (error instanceof FunctionsHttpError) {
+    try {
+      const response = error.context as Response;
+      const payload = await response.clone().json();
+      const message = getErrorMessage(payload);
+      if (message) return new Error(message, { cause: error });
+    } catch {
+      // Non-JSON responses still fall back to the SDK transport error below.
+    }
+  }
+
+  if (error instanceof Error) return error;
+  return new Error('Edge Function gagal dipanggil. Silakan coba lagi.');
+}
+
 export async function createDokuCheckout(input: {
   customer: { name: string; email?: string; phone?: string };
   items: Array<{ product_id: string; variant_id?: string; quantity: number }>;
@@ -34,7 +60,7 @@ export async function createDokuCheckout(input: {
     body: input,
   });
 
-  if (error) throw error;
+  if (error) throw await normalizeFunctionError(error);
   if (data?.error) throw new Error(data.error);
   return data as {
     order_id: string;
@@ -81,7 +107,7 @@ export async function getCheckoutResult(invoiceNumber: string) {
     },
   });
 
-  if (error) throw error;
+  if (error) throw await normalizeFunctionError(error);
   if (data?.error && !data?.status && !data?.kind && !data?.outcome) {
     throw new Error(data.error);
   }
@@ -104,7 +130,7 @@ export async function reconcileDokuPayment(input: { invoice_number?: string; inv
     },
   });
 
-  if (error) throw error;
+  if (error) throw await normalizeFunctionError(error);
   if (data?.error) throw new Error(data.error);
 
   const result = data?.result ?? data;
@@ -129,7 +155,7 @@ export async function cancelDokuOrder(invoiceNumber: string) {
     body: { invoice_number: invoiceNumber },
   });
 
-  if (error) throw error;
+  if (error) throw await normalizeFunctionError(error);
   if (data?.error) throw new Error(data.error);
   return data as { ok: boolean; message?: string };
 }

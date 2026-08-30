@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { mapDokuCheckoutPaymentStatus } from '../_shared/dokuPaymentStatus.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -38,13 +39,6 @@ function normalizeUnknownError(error: unknown, fallbackMessage: string) {
     message: typeof error === 'string' ? error : fallbackMessage,
     raw: error,
   };
-}
-
-function textResponse(body: string, status = 200) {
-  return new Response(body, {
-    status,
-    headers: { ...corsHeaders, 'Content-Type': 'text/plain' },
-  });
 }
 
 function requiredEnv(name: string) {
@@ -125,11 +119,15 @@ function extractPaymentStatus(payload: Record<string, unknown>) {
     '',
   ).toLowerCase();
 
-  if (['success', 'settlement', 'capture', 'paid'].includes(status)) return 'paid';
-  if (['expired'].includes(status)) return 'expired';
-  if (['cancelled', 'canceled'].includes(status)) return 'cancelled';
-  if (['failed', 'deny'].includes(status)) return 'failed';
-  return 'pending';
+  return mapDokuCheckoutPaymentStatus(status);
+}
+
+function extractRawPaymentStatus(payload: Record<string, unknown>) {
+  const transaction = payload.transaction as Record<string, unknown> | undefined;
+  const payment = payload.payment as Record<string, unknown> | undefined;
+  return String(
+    transaction?.status ?? transaction?.transaction_status ?? payment?.status ?? payload.status ?? '',
+  ).toLowerCase() || 'unknown';
 }
 
 function extractAmount(payload: Record<string, unknown>) {
@@ -158,11 +156,19 @@ function dokuHeaderSnapshot(req: Request) {
     client_id: req.headers.get('Client-Id'),
     request_id: req.headers.get('Request-Id'),
     request_timestamp: req.headers.get('Request-Timestamp'),
-    signature: req.headers.get('Signature'),
+    signature_present: Boolean(req.headers.get('Signature')),
   };
 }
 
+function logPaymentEvent(level: 'info' | 'error', event: string, fields: Record<string, unknown>) {
+  console[level](JSON.stringify({ service: 'doku-webhook', event, ...fields }));
+}
+
 Deno.serve(async (req) => {
+  const startedAt = performance.now();
+  const requestId = req.headers.get('Request-Id');
+  let invoiceForLog: string | null = null;
+  let providerStatusForLog = 'unknown';
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
   if (req.method === 'GET' || req.method === 'HEAD') {
     return new Response(req.method === 'HEAD' ? null : 'ok', {
@@ -177,22 +183,32 @@ Deno.serve(async (req) => {
     const verified = await verifyDokuSignature(req, rawBody);
 
     if (!verified) {
-      if (!hasDokuSignatureHeaders(req)) {
-        return textResponse('CONTINUE');
-      }
-
+      logPaymentEvent('error', 'signature_rejected', {
+        request_id: requestId,
+        signature_headers_present: hasDokuSignatureHeaders(req),
+        duration_ms: Math.round(performance.now() - startedAt),
+      });
       return jsonResponse({ error: 'Invalid DOKU signature' }, 401);
     }
 
     if (!rawBody.trim()) {
-      return textResponse('CONTINUE');
+      return jsonResponse({ error: 'Empty webhook payload' }, 400);
     }
 
     const payload = JSON.parse(rawBody) as Record<string, unknown>;
     const invoiceNumber = extractInvoiceNumber(payload);
     const paymentStatus = extractPaymentStatus(payload);
+    const providerStatus = extractRawPaymentStatus(payload);
+    invoiceForLog = invoiceNumber ?? null;
+    providerStatusForLog = providerStatus;
 
     if (!invoiceNumber) {
+      logPaymentEvent('error', 'payload_rejected', {
+        request_id: requestId,
+        provider_status: providerStatus,
+        reason: 'missing_invoice_number',
+        duration_ms: Math.round(performance.now() - startedAt),
+      });
       return jsonResponse({ error: 'Missing invoice number' }, 400);
     }
 
@@ -214,13 +230,38 @@ Deno.serve(async (req) => {
     const result = Array.isArray(data) ? data[0] : data;
 
     if (result?.processing_status === 'failed') {
+      logPaymentEvent('error', 'processing_failed', {
+        invoice_number: invoiceNumber,
+        request_id: requestId,
+        provider_status: providerStatus,
+        payment_status: paymentStatus,
+        payment_event_id: result?.payment_event_id ?? null,
+        processing_status: result?.processing_status,
+        duration_ms: Math.round(performance.now() - startedAt),
+      });
       return jsonResponse({ ok: false, status: paymentStatus, result }, 500);
     }
 
+    logPaymentEvent('info', 'processed', {
+      invoice_number: invoiceNumber,
+      request_id: requestId,
+      provider_status: providerStatus,
+      payment_status: paymentStatus,
+      payment_event_id: result?.payment_event_id ?? null,
+      processing_status: result?.processing_status ?? null,
+      event_inserted: Boolean(result?.event_inserted),
+      duration_ms: Math.round(performance.now() - startedAt),
+    });
     return jsonResponse({ ok: true, status: paymentStatus, result });
   } catch (error) {
     const normalizedError = normalizeUnknownError(error, 'Unexpected webhook error');
-    console.error('doku-webhook error:', JSON.stringify(normalizedError));
+    logPaymentEvent('error', 'unhandled_error', {
+      invoice_number: invoiceForLog,
+      request_id: requestId,
+      provider_status: providerStatusForLog,
+      error: normalizedError,
+      duration_ms: Math.round(performance.now() - startedAt),
+    });
     return jsonResponse({ error: normalizedError.message, detail: normalizedError }, 500);
   }
 });

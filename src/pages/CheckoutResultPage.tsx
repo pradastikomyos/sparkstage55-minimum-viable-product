@@ -26,7 +26,14 @@ export function CheckoutResultPage() {
     staleTime: 0,
   });
 
-  const { pollCount, isPollingExhausted, reconcileMutation, resetPolling } = useCheckoutPolling({
+  const {
+    pollCount,
+    reconcileAttemptCount,
+    lastCheckedAt,
+    isPollingExhausted,
+    reconcileMutation,
+    resetPolling,
+  } = useCheckoutPolling({
     invoice,
     orderQuery,
   });
@@ -92,6 +99,8 @@ export function CheckoutResultPage() {
         invoice={invoice}
         orderQuery={orderQuery}
         pollCount={pollCount}
+        reconcileAttemptCount={reconcileAttemptCount}
+        lastCheckedAt={lastCheckedAt}
         isPollingExhausted={isPollingExhausted}
         reconcileMutation={reconcileMutation}
         order={order}

@@ -1,4 +1,4 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient, type SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -28,6 +28,25 @@ function jsonResponse(body: unknown, status = 200) {
   });
 }
 
+function normalizeUnknownError(error: unknown, fallbackMessage: string) {
+  if (error instanceof Error) return { message: error.message, name: error.name, stack: error.stack };
+  if (error && typeof error === 'object') {
+    const value = error as Record<string, unknown>;
+    return {
+      message: typeof value.message === 'string' ? value.message : fallbackMessage,
+      code: value.code,
+      details: value.details,
+      hint: value.hint,
+      phase: value.phase,
+    };
+  }
+  return { message: typeof error === 'string' ? error : fallbackMessage };
+}
+
+function logPaymentEvent(level: 'info' | 'error', event: string, fields: Record<string, unknown>) {
+  console[level](JSON.stringify({ service: 'create-doku-checkout', event, ...fields }));
+}
+
 function requiredEnv(name: string) {
   const value = Deno.env.get(name);
   if (!value) throw new Error(`Missing environment variable: ${name}`);
@@ -49,8 +68,45 @@ async function getAuthenticatedUserId(req: Request, supabaseUrl: string, service
   });
   const { data, error } = await authClient.auth.getUser(token);
 
-  if (error || !data.user) return null;
+  if (error) throw { phase: 'authenticate_user', ...error };
+  if (!data.user) return null;
   return data.user.id;
+}
+
+async function recordFailedCheckout(
+  supabase: SupabaseClient<any, 'public', any>,
+  orderId: string,
+  totalAmount: number,
+  dokuJson: Record<string, unknown>,
+) {
+  // Run all cleanup operations even if one fails, then surface every failure.
+  const [attemptResult, releaseResult, orderResult] = await Promise.all([
+    supabase.from('payment_attempts').insert({
+      order_id: orderId,
+      request_id: extractDokuResponseRequestId(dokuJson),
+      status: 'failed',
+      amount_idr: totalAmount,
+      raw_payload: dokuJson,
+    }),
+    supabase.rpc('release_inventory_reservations_for_order', { target_order_id: orderId }),
+    supabase.from('orders')
+      .update({ status: 'cancelled', payment_status: 'failed' })
+      .eq('id', orderId),
+  ]);
+
+  const failures = [
+    ['record_failed_payment_attempt', attemptResult.error],
+    ['release_inventory_reservations', releaseResult.error],
+    ['mark_order_cancelled', orderResult.error],
+  ].filter((entry) => entry[1]);
+
+  if (failures.length) {
+    throw {
+      phase: 'failed_checkout_cleanup',
+      message: 'One or more failed-checkout cleanup operations failed',
+      details: failures.map(([phase, error]) => ({ phase, error })),
+    };
+  }
 }
 
 function makeInvoiceNumber() {
@@ -111,6 +167,9 @@ async function dokuHeaders(body: string, requestTarget: string) {
 }
 
 Deno.serve(async (req) => {
+  const startedAt = performance.now();
+  const correlationId = crypto.randomUUID();
+  let invoiceNumber: string | null = null;
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
   if (req.method !== 'POST') return jsonResponse({ error: 'Method not allowed' }, 405);
 
@@ -192,7 +251,7 @@ Deno.serve(async (req) => {
     });
 
     const totalAmount = lineItems.reduce((sum, item) => sum + item.line_total_idr, 0);
-    const invoiceNumber = makeInvoiceNumber();
+    invoiceNumber = makeInvoiceNumber();
 
     const { data: order, error: orderError } = await supabase
       .rpc('create_pending_doku_order', {
@@ -206,8 +265,16 @@ Deno.serve(async (req) => {
       })
       .single();
 
-    if (orderError) throw orderError;
-    if (!order?.order_id) throw new Error('Order creation did not return an order id');
+    if (orderError) throw { phase: 'create_pending_order', ...orderError };
+    const orderId = (order as { order_id?: string } | null)?.order_id;
+    if (!orderId) throw new Error('Order creation did not return an order id');
+
+    logPaymentEvent('info', 'order_reserved', {
+      correlation_id: correlationId,
+      invoice_number: invoiceNumber,
+      order_id: orderId,
+      amount_idr: totalAmount,
+    });
 
     const dokuRequestTarget = '/checkout/v1/payment';
     const dokuBody = JSON.stringify({
@@ -240,70 +307,99 @@ Deno.serve(async (req) => {
       },
     });
 
+    const requestHeaders = await dokuHeaders(dokuBody, dokuRequestTarget);
+    const dokuRequestId = requestHeaders['Request-Id'];
     const dokuResponse = await fetch(`${dokuBaseUrl}${dokuRequestTarget}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(await dokuHeaders(dokuBody, dokuRequestTarget)),
+        ...requestHeaders,
       },
       body: dokuBody,
     });
 
-    const dokuJson = await dokuResponse.json();
+    const rawDokuResponse = await dokuResponse.text();
+    let dokuJson: Record<string, unknown>;
+    try {
+      dokuJson = JSON.parse(rawDokuResponse) as Record<string, unknown>;
+    } catch {
+      dokuJson = { raw: rawDokuResponse };
+    }
 
     if (!dokuResponse.ok) {
-      await supabase.from('payment_attempts').insert({
-        order_id: order.order_id,
-        request_id: extractDokuResponseRequestId(dokuJson),
-        status: 'failed',
-        amount_idr: totalAmount,
-        raw_payload: dokuJson,
+      await recordFailedCheckout(supabase, orderId, totalAmount, dokuJson);
+      logPaymentEvent('error', 'provider_checkout_failed', {
+        correlation_id: correlationId,
+        invoice_number: invoiceNumber,
+        order_id: orderId,
+        request_id: dokuRequestId,
+        response_request_id: extractDokuResponseRequestId(dokuJson),
+        http_status: dokuResponse.status,
+        duration_ms: Math.round(performance.now() - startedAt),
       });
-      await supabase.rpc('release_inventory_reservations_for_order', { target_order_id: order.order_id });
-      await supabase
-        .from('orders')
-        .update({ status: 'cancelled', payment_status: 'failed' })
-        .eq('id', order.order_id);
       return jsonResponse({ error: 'DOKU checkout creation failed', detail: dokuJson }, 502);
     }
 
-    const paymentUrl = dokuJson?.response?.payment?.url;
-    const sessionId = dokuJson?.response?.order?.session_id;
+    const dokuResponseBody = nestedRecord(dokuJson, 'response');
+    const paymentUrl = nestedRecord(dokuResponseBody, 'payment').url;
+    const sessionId = nestedRecord(dokuResponseBody, 'order').session_id;
 
     if (!paymentUrl) {
-      await supabase.rpc('release_inventory_reservations_for_order', { target_order_id: order.order_id });
-      await supabase
-        .from('orders')
-        .update({ status: 'cancelled', payment_status: 'failed' })
-        .eq('id', order.order_id);
+      await recordFailedCheckout(supabase, orderId, totalAmount, dokuJson);
+      logPaymentEvent('error', 'provider_payment_url_missing', {
+        correlation_id: correlationId,
+        invoice_number: invoiceNumber,
+        order_id: orderId,
+        request_id: dokuRequestId,
+        response_request_id: extractDokuResponseRequestId(dokuJson),
+        duration_ms: Math.round(performance.now() - startedAt),
+      });
       return jsonResponse({ error: 'DOKU did not return payment URL', detail: dokuJson }, 502);
     }
 
-    await supabase.from('payment_attempts').insert({
-      order_id: order.order_id,
+    const { error: attemptError } = await supabase.from('payment_attempts').insert({
+      order_id: orderId,
       provider_reference: sessionId ?? null,
       request_id: extractDokuResponseRequestId(dokuJson),
       status: 'pending',
       amount_idr: totalAmount,
       raw_payload: dokuJson,
     });
+    if (attemptError) throw { phase: 'record_payment_attempt', ...attemptError };
 
-    await supabase
+    const { error: updateOrderError } = await supabase
       .from('orders')
       .update({
         doku_payment_url: paymentUrl,
         doku_session_id: sessionId ?? null,
       })
-      .eq('id', order.order_id);
+      .eq('id', orderId);
+    if (updateOrderError) throw { phase: 'save_doku_session', ...updateOrderError };
+
+    logPaymentEvent('info', 'provider_checkout_created', {
+      correlation_id: correlationId,
+      invoice_number: invoiceNumber,
+      order_id: orderId,
+      request_id: dokuRequestId,
+      response_request_id: extractDokuResponseRequestId(dokuJson),
+      provider_reference: sessionId ?? null,
+      duration_ms: Math.round(performance.now() - startedAt),
+    });
 
     return jsonResponse({
-      order_id: order.order_id,
+      order_id: orderId,
       invoice_number: invoiceNumber,
       payment_url: paymentUrl,
       amount_idr: totalAmount,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unexpected checkout error';
-    return jsonResponse({ error: message }, 500);
+    const normalizedError = normalizeUnknownError(error, 'Unexpected checkout error');
+    logPaymentEvent('error', 'unhandled_error', {
+      correlation_id: correlationId,
+      invoice_number: invoiceNumber,
+      error: normalizedError,
+      duration_ms: Math.round(performance.now() - startedAt),
+    });
+    return jsonResponse({ error: normalizedError.message, detail: normalizedError }, 500);
   }
 });

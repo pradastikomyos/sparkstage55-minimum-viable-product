@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { mapDokuCheckoutPaymentStatus } from '../_shared/dokuPaymentStatus.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -91,6 +92,15 @@ async function dokuGetHeaders(requestTarget: string) {
   };
 }
 
+function dokuHeaderSnapshot(headers: Record<string, string>) {
+  return {
+    client_id: headers['Client-Id'],
+    request_id: headers['Request-Id'],
+    request_timestamp: headers['Request-Timestamp'],
+    signature_present: Boolean(headers.Signature),
+  };
+}
+
 function unwrapDokuPayload(payload: Record<string, unknown>) {
   return payload.response && typeof payload.response === 'object'
     ? payload.response as Record<string, unknown>
@@ -119,12 +129,8 @@ function extractProviderStatus(payload: Record<string, unknown>) {
   ).toLowerCase();
 }
 
-function mapPaymentStatus(providerStatus: string): PaymentStatus {
-  if (['success', 'settlement', 'capture', 'paid'].includes(providerStatus)) return 'paid';
-  if (providerStatus === 'expired') return 'expired';
-  if (['cancelled', 'canceled'].includes(providerStatus)) return 'cancelled';
-  if (['failed', 'deny'].includes(providerStatus)) return 'failed';
-  return 'pending';
+function logPaymentEvent(level: 'info' | 'error', event: string, fields: Record<string, unknown>) {
+  console[level](JSON.stringify({ service: 'reconcile-doku-payment', event, ...fields }));
 }
 
 function extractInvoiceNumber(payload: Record<string, unknown>, fallback: string) {
@@ -196,11 +202,13 @@ async function getCaller(req: Request, supabaseUrl: string, serviceRoleKey: stri
   const { data, error } = await client.auth.getUser(token);
   if (error || !data.user) return { userId: null, isAdmin: false, isSystem: false };
 
-  const { data: profile } = await client
+  const { data: profile, error: profileError } = await client
     .from('profiles')
     .select('role')
     .eq('id', data.user.id)
     .maybeSingle();
+
+  if (profileError) throw { phase: 'load_caller_profile', ...profileError };
 
   return {
     userId: data.user.id,
@@ -210,12 +218,15 @@ async function getCaller(req: Request, supabaseUrl: string, serviceRoleKey: stri
 }
 
 Deno.serve(async (req) => {
+  const startedAt = performance.now();
+  const correlationId = crypto.randomUUID();
+  let invoiceNumber: string | null = null;
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
   if (req.method !== 'POST') return jsonResponse({ error: 'Method not allowed' }, 405);
 
   try {
     const payload = await req.json().catch(() => ({}));
-    const invoiceNumber = String(payload.invoice_number ?? payload.invoiceNumber ?? '').trim();
+    invoiceNumber = String(payload.invoice_number ?? payload.invoiceNumber ?? '').trim();
     if (!invoiceNumber) return jsonResponse({ error: 'Invoice number is required' }, 400);
 
     const supabaseUrl = requiredEnv('SUPABASE_URL');
@@ -238,6 +249,12 @@ Deno.serve(async (req) => {
     const requestTarget = `/orders/v1/status/${encodeURIComponent(invoiceNumber)}`;
     const dokuBaseUrl = Deno.env.get('DOKU_BASE_URL') ?? 'https://api-sandbox.doku.com';
     const headers = await dokuGetHeaders(requestTarget);
+    const providerRequestId = headers['Request-Id'];
+    logPaymentEvent('info', 'provider_check_started', {
+      correlation_id: correlationId,
+      invoice_number: invoiceNumber,
+      request_id: providerRequestId,
+    });
     const dokuResponse = await fetch(`${dokuBaseUrl}${requestTarget}`, {
       method: 'GET',
       headers,
@@ -252,6 +269,13 @@ Deno.serve(async (req) => {
     }
 
     if (!dokuResponse.ok) {
+      logPaymentEvent('error', 'provider_check_failed', {
+        correlation_id: correlationId,
+        invoice_number: invoiceNumber,
+        request_id: providerRequestId,
+        http_status: dokuResponse.status,
+        duration_ms: Math.round(performance.now() - startedAt),
+      });
       return jsonResponse({
         error: 'DOKU check status failed',
         detail: dokuJson,
@@ -259,7 +283,7 @@ Deno.serve(async (req) => {
     }
 
     const providerStatus = extractProviderStatus(dokuJson);
-    const paymentStatus = mapPaymentStatus(providerStatus);
+    const paymentStatus: PaymentStatus = mapDokuCheckoutPaymentStatus(providerStatus);
     const resolvedInvoice = extractInvoiceNumber(dokuJson, invoiceNumber);
     const responseRequestId = extractResponseRequestId(dokuJson);
     const rawDigest = await digestText(JSON.stringify(dokuJson));
@@ -270,7 +294,7 @@ Deno.serve(async (req) => {
       event_source: 'check_status',
       event_status: paymentStatus,
       raw_event: dokuJson,
-      event_headers: headers,
+      event_headers: dokuHeaderSnapshot(headers),
       provider_request_id: responseRequestId,
       provider_reference: extractProviderReference(dokuJson),
       event_idempotency_key: idempotencyKey,
@@ -279,7 +303,7 @@ Deno.serve(async (req) => {
 
     if (processError) throw { phase: 'process_doku_payment_event', ...processError };
 
-    const { data: updatedOrder } = await supabase
+    const { data: updatedOrder, error: updatedOrderError } = await supabase
       .from('orders')
       .select(`
         id,
@@ -297,7 +321,22 @@ Deno.serve(async (req) => {
       .eq('invoice_number', resolvedInvoice)
       .maybeSingle();
 
+    if (updatedOrderError) throw { phase: 'load_updated_order', ...updatedOrderError };
+
     const result = Array.isArray(processed) ? processed[0] : processed;
+    const logFields = {
+      correlation_id: correlationId,
+      invoice_number: resolvedInvoice,
+      request_id: providerRequestId,
+      response_request_id: responseRequestId,
+      provider_status: providerStatus || 'unknown',
+      payment_status: paymentStatus,
+      payment_event_id: result?.payment_event_id ?? null,
+      processing_status: result?.processing_status ?? null,
+      event_inserted: Boolean(result?.event_inserted),
+      duration_ms: Math.round(performance.now() - startedAt),
+    };
+    logPaymentEvent(result?.processing_status === 'failed' ? 'error' : 'info', 'provider_check_processed', logFields);
     return jsonResponse({
       ok: result?.processing_status !== 'failed',
       invoice_number: resolvedInvoice,
@@ -315,7 +354,12 @@ Deno.serve(async (req) => {
     }, result?.processing_status === 'failed' ? 500 : 200);
   } catch (error) {
     const normalizedError = normalizeUnknownError(error, 'Unexpected reconciliation error');
-    console.error('reconcile-doku-payment error:', JSON.stringify(normalizedError));
+    logPaymentEvent('error', 'unhandled_error', {
+      correlation_id: correlationId,
+      invoice_number: invoiceNumber,
+      error: normalizedError,
+      duration_ms: Math.round(performance.now() - startedAt),
+    });
     return jsonResponse({ error: normalizedError.message, detail: normalizedError }, 500);
   }
 });

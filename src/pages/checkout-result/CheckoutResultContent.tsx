@@ -6,7 +6,6 @@ import type { CheckoutResultResponse } from '../../services/checkout';
 import { getFirstPickupCode } from '../../utils/orderHelpers';
 import { loadDokuCheckoutScript, openDokuCheckout } from '../../utils/dokuCheckout';
 import { CheckoutSuccessView } from './CheckoutSuccessView';
-import { RotatingPendingMessage } from './RotatingPendingMessage';
 import { StatusIcon } from './StatusIcon';
 import { cancelDokuOrder } from '../../services/checkout';
 
@@ -30,6 +29,8 @@ export function CheckoutResultContent({
   invoice,
   orderQuery,
   pollCount,
+  reconcileAttemptCount,
+  lastCheckedAt,
   isPollingExhausted,
   reconcileMutation,
   order,
@@ -44,6 +45,8 @@ export function CheckoutResultContent({
   invoice: string | null;
   orderQuery: OrderQueryResult;
   pollCount: number;
+  reconcileAttemptCount: number;
+  lastCheckedAt: Date | null;
   isPollingExhausted: boolean;
   reconcileMutation: ReconcileMutationResult;
   order: CheckoutResultOrder | null;
@@ -120,11 +123,15 @@ export function CheckoutResultContent({
           <>
             <StatusIcon status="pending_payment" />
             <p className="checkout-result-eyebrow">Menunggu konfirmasi</p>
-            <h1 className="checkout-result-title">
-              <RotatingPendingMessage pollCount={pollCount} />
-            </h1>
+            <h1 className="checkout-result-title">Menunggu konfirmasi pembayaran</h1>
             <p className="checkout-result-body">
-              Kami sedang menunggu konfirmasi dari bank. Halaman ini akan otomatis diperbarui.
+              Kami sedang menunggu notifikasi pembayaran. Status database diperbarui otomatis,
+              lalu DOKU akan dicek setelah masa tunggu 60 detik bila diperlukan.
+            </p>
+            <p className="checkout-result-status-note">
+              {lastCheckedAt
+                ? `Terakhir dicek ${lastCheckedAt.toLocaleTimeString('id-ID')} (database #${pollCount}${reconcileAttemptCount ? `, DOKU #${reconcileAttemptCount}` : ''}).`
+                : 'Menyiapkan pengecekan status pertama...'}
             </p>
             <p className="checkout-result-invoice">Invoice: <strong>{invoice}</strong></p>
           </>
@@ -134,11 +141,17 @@ export function CheckoutResultContent({
           <>
             <StatusIcon status="pending_payment" />
             <p className="checkout-result-eyebrow">Menunggu konfirmasi</p>
-            <h1 className="checkout-result-title">Pembayaran belum diselesaikan</h1>
+            <h1 className="checkout-result-title">Status pembayaran belum terkonfirmasi</h1>
             <p className="checkout-result-body">
-              Jika kamu menutup atau batal dari DOKU, kamu bisa melanjutkan pembayaran atau membatalkan pesanan.
+              Sistem masih dapat mengecek DOKU secara terbatas. Jika kamu menutup atau batal dari DOKU,
+              kamu juga bisa melanjutkan pembayaran atau membatalkan pesanan.
             </p>
             <p className="checkout-result-invoice">Invoice: <strong>{invoice}</strong></p>
+            {lastCheckedAt ? (
+              <p className="checkout-result-status-note">
+                Terakhir dicek {lastCheckedAt.toLocaleTimeString('id-ID')} (database #{pollCount}, DOKU #{reconcileAttemptCount}).
+              </p>
+            ) : null}
             
             {reconcileMutation.data?.message ? (
               <p className="checkout-result-status-note">{reconcileMutation.data.message}</p>
@@ -175,7 +188,7 @@ export function CheckoutResultContent({
               <button
                 type="button"
                 className="checkout-result-text-button"
-                onClick={() => { resetPolling(); orderQuery.refetch(); }}
+                onClick={() => resetPolling()}
               >
                 Cek Ulang Halaman
               </button>
