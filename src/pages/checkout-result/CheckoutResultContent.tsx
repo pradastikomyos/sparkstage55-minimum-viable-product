@@ -125,8 +125,7 @@ export function CheckoutResultContent({
             <p className="checkout-result-eyebrow">Menunggu konfirmasi</p>
             <h1 className="checkout-result-title">Menunggu konfirmasi pembayaran</h1>
             <p className="checkout-result-body">
-              Kami sedang menunggu notifikasi pembayaran. Status database diperbarui otomatis,
-              lalu DOKU akan dicek setelah masa tunggu 60 detik bila diperlukan.
+              Kami sedang memverifikasi pembayaran melalui status database dan DOKU secara otomatis.
             </p>
             <p className="checkout-result-status-note">
               {lastCheckedAt

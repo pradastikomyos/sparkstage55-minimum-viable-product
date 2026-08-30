@@ -11,6 +11,10 @@ import { useCheckoutPolling } from './checkout-result/useCheckoutPolling';
 export function CheckoutResultPage() {
   const [searchParams] = useSearchParams();
   const invoice = useMemo(() => searchParams.get('invoice'), [searchParams]);
+  const providerReturned = useMemo(
+    () => searchParams.get('returned') === '1' || searchParams.get('pending') !== '1',
+    [searchParams],
+  );
   const previousStatusRef = useRef<CheckoutResultOrder['status'] | null>(null);
   const confettiTriggeredRef = useRef(false);
 
@@ -36,6 +40,7 @@ export function CheckoutResultPage() {
   } = useCheckoutPolling({
     invoice,
     orderQuery,
+    providerReturned,
   });
 
   useEffect(() => {

@@ -277,13 +277,14 @@ Deno.serve(async (req) => {
     });
 
     const dokuRequestTarget = '/checkout/v1/payment';
+    const callbackUrl = `${siteUrl}/checkout-result?invoice=${encodeURIComponent(invoiceNumber)}&returned=1`;
     const dokuBody = JSON.stringify({
       order: {
         amount: totalAmount,
         invoice_number: invoiceNumber,
         currency: 'IDR',
-        callback_url: `${siteUrl}/checkout-result?invoice=${encodeURIComponent(invoiceNumber)}`,
-        callback_url_result: `${siteUrl}/checkout-result?invoice=${encodeURIComponent(invoiceNumber)}`,
+        callback_url: callbackUrl,
+        callback_url_result: callbackUrl,
         auto_redirect: true,
         line_items: lineItems.map((item) => ({
           id: item.sku,

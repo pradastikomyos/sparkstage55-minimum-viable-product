@@ -7,11 +7,20 @@ import {
   getDbPollOffset,
   getReconcileOffset,
   shouldReconcileOnActivation,
+  shouldReconcileImmediatelyOnReturn,
 } from './paymentPollingPolicy';
 
 type OrderQueryResult = Pick<UseQueryResult<CheckoutResultResponse, Error>, 'data' | 'isLoading' | 'isFetching' | 'refetch'>;
 
-export function useCheckoutPolling({ invoice, orderQuery }: { invoice: string | null; orderQuery: OrderQueryResult }) {
+export function useCheckoutPolling({
+  invoice,
+  orderQuery,
+  providerReturned,
+}: {
+  invoice: string | null;
+  orderQuery: OrderQueryResult;
+  providerReturned: boolean;
+}) {
   const [pollCount, setPollCount] = useState(0);
   const [reconcileAttemptCount, setReconcileAttemptCount] = useState(0);
   const [lastCheckedAt, setLastCheckedAt] = useState<Date | null>(null);
@@ -21,6 +30,7 @@ export function useCheckoutPolling({ invoice, orderQuery }: { invoice: string | 
   const dbPollingStartedAtRef = useRef(Date.now());
   const lastFocusRefreshAtRef = useRef(0);
   const reconcileInFlightRef = useRef(false);
+  const immediateReturnReconciledInvoiceRef = useRef<string | null>(null);
   const { data, isLoading, isFetching, refetch } = orderQuery;
   const pollingState = getCheckoutPollingState(data?.kind, data?.order?.status);
   const isPending = pollingState === 'pending';
@@ -66,6 +76,25 @@ export function useCheckoutPolling({ invoice, orderQuery }: { invoice: string | 
     },
   });
   const reconcileIsPending = reconcileMutation.isPending;
+
+  // A DOKU callback reloads this page, so local timers start from zero again.
+  // Verify once immediately on provider return. The backend operation is
+  // authenticated and idempotent; PENDING still follows the bounded schedule.
+  useEffect(() => {
+    const alreadyAttempted = immediateReturnReconciledInvoiceRef.current === invoice;
+    if (!invoice || !shouldReconcileImmediatelyOnReturn(
+      providerReturned,
+      isPending,
+      isLoading,
+      reconcileInFlightRef.current,
+      alreadyAttempted,
+    )) return;
+
+    immediateReturnReconciledInvoiceRef.current = invoice;
+    reconcileInFlightRef.current = true;
+    setReconcileAttemptCount((current) => current + 1);
+    reconcileMutation.mutate();
+  }, [invoice, providerReturned, isPending, isLoading, reconcileMutation.mutate]);
 
   // Provider reconciliation starts at 60 seconds and retries on a bounded
   // absolute schedule, including after transient failures or PENDING responses.

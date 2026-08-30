@@ -37,6 +37,16 @@ export function shouldReconcileOnActivation(
   return dueOffset !== null && elapsedMs >= dueOffset;
 }
 
+export function shouldReconcileImmediatelyOnReturn(
+  providerReturned: boolean,
+  isPending: boolean,
+  isLoading: boolean,
+  isInFlight: boolean,
+  alreadyAttempted: boolean,
+): boolean {
+  return providerReturned && isPending && !isLoading && !isInFlight && !alreadyAttempted;
+}
+
 export function getCheckoutPollingState(
   kind: string | null | undefined,
   orderStatus: string | null | undefined,

@@ -8,6 +8,7 @@
 - Beberapa error backend dan database tidak terlihat jelas.
 - UI terlihat terus mengecek walaupun request tidak selalu berjalan.
 - Timer browser tertunda saat DOKU Checkout berada di atas halaman hasil, sehingga status sukses baru tampil 6-8 detik setelah kembali.
+- Callback DOKU melakukan full reload dan mereset jam tunggu frontend; transaksi uji berikutnya baru direconcile tepat 60 detik setelah reload.
 
 ## Root Cause And Fix
 
@@ -15,12 +16,13 @@
 - Database dicek bertahap, sedangkan DOKU baru dicek mulai detik ke-60 dengan retry terbatas.
 - Tab yang aktif kembali memicu refresh status.
 - Jika check DOKU sudah jatuh tempo, halaman yang aktif kembali langsung menjalankan reconcile dengan guard anti-duplikasi.
+- Callback sekarang diberi penanda `returned=1` dan menjalankan satu verifikasi backend segera; hasil `PENDING` tetap memakai retry terbatas.
 - Webhook POST tanpa signature sekarang ditolak.
 - Status non-final seperti `FAILED`, `REDIRECT`, dan `TIMEOUT` tidak langsung membatalkan order.
 - Error Edge Function dibaca dan ditampilkan lebih jelas.
 - Backend menambahkan log terstruktur dan memeriksa semua operasi database penting.
 - UI menampilkan waktu pengecekan dan jumlah percobaan yang nyata.
-- Ditambahkan 27 automated tests untuk policy polling dan status pembayaran.
+- Ditambahkan 28 automated tests untuk policy polling dan status pembayaran.
 - Reconcile tidak lagi menyimpan signature DOKU ke `payment_events`; hanya metadata aman dan indikator keberadaan signature yang disimpan.
 - RPC SECURITY DEFINER yang dapat mengubah state pembayaran sekarang hanya dapat dieksekusi oleh `service_role`, sehingga akses REST langsung tidak dapat melewati authentication dan ownership check Edge Function.
 
@@ -32,7 +34,7 @@
 
 ## Verification
 
-- `npm test`: passed, 27 tests.
+- `npm test`: passed, 28 tests.
 - `npm run typecheck`: passed.
 - `npm run check:architecture`: passed.
 - `npm run build`: passed. Warning `INVALID_ANNOTATION` dari dependency Hugeicons tetap ada dan bukan kegagalan payment.
@@ -42,9 +44,9 @@
 
 ## Edge Functions
 
-- `create-doku-checkout` deployed version 8, JWT verification enabled.
-- `reconcile-doku-payment` deployed version 7, JWT verification enabled.
-- `doku-webhook` deployed version 9, JWT verification disabled at gateway and DOKU signature verification enforced in code.
+- `create-doku-checkout` deployed version 10, JWT verification enabled.
+- `reconcile-doku-payment` deployed version 8, JWT verification enabled.
+- `doku-webhook` deployed version 10, JWT verification disabled at gateway and DOKU signature verification enforced in code.
 
 ## Remaining Manual Work
 
