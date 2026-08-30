@@ -7,18 +7,20 @@
 - Webhook tanpa signature dibalas sukses tetapi tidak diproses.
 - Beberapa error backend dan database tidak terlihat jelas.
 - UI terlihat terus mengecek walaupun request tidak selalu berjalan.
+- Timer browser tertunda saat DOKU Checkout berada di atas halaman hasil, sehingga status sukses baru tampil 6-8 detik setelah kembali.
 
 ## Root Cause And Fix
 
 - Polling memakai jadwal absolut dan tidak lagi bergantung pada objek query yang tidak stabil.
 - Database dicek bertahap, sedangkan DOKU baru dicek mulai detik ke-60 dengan retry terbatas.
 - Tab yang aktif kembali memicu refresh status.
+- Jika check DOKU sudah jatuh tempo, halaman yang aktif kembali langsung menjalankan reconcile dengan guard anti-duplikasi.
 - Webhook POST tanpa signature sekarang ditolak.
 - Status non-final seperti `FAILED`, `REDIRECT`, dan `TIMEOUT` tidak langsung membatalkan order.
 - Error Edge Function dibaca dan ditampilkan lebih jelas.
 - Backend menambahkan log terstruktur dan memeriksa semua operasi database penting.
 - UI menampilkan waktu pengecekan dan jumlah percobaan yang nyata.
-- Ditambahkan 25 automated tests untuk policy polling dan status pembayaran.
+- Ditambahkan 27 automated tests untuk policy polling dan status pembayaran.
 - Reconcile tidak lagi menyimpan signature DOKU ke `payment_events`; hanya metadata aman dan indikator keberadaan signature yang disimpan.
 - RPC SECURITY DEFINER yang dapat mengubah state pembayaran sekarang hanya dapat dieksekusi oleh `service_role`, sehingga akses REST langsung tidak dapat melewati authentication dan ownership check Edge Function.
 
@@ -30,7 +32,7 @@
 
 ## Verification
 
-- `npm test`: passed, 25 tests.
+- `npm test`: passed, 27 tests.
 - `npm run typecheck`: passed.
 - `npm run check:architecture`: passed.
 - `npm run build`: passed. Warning `INVALID_ANNOTATION` dari dependency Hugeicons tetap ada dan bukan kegagalan payment.
@@ -46,5 +48,5 @@
 
 ## Remaining Manual Work
 
-- Frontend has not been deployed because this workspace has no Vercel deployment access.
-- Run one sandbox checkout from the deployed frontend while signed in, complete or leave the DOKU flow pending, then verify the invoice through order, payment attempt, payment event, and function logs.
+- Pastikan Notification URL pada DOKU Back Office memakai path yang sama dengan `DOKU_NOTIFICATION_URL`; transaksi sandbox terakhir tidak mengirim webhook dan selesai lewat reconcile.
+- Ulangi satu sandbox checkout setelah frontend terbaru ter-deploy dan ukur waktu dari kembali ke halaman sampai centang sukses.

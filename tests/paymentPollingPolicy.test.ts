@@ -6,6 +6,7 @@ import {
   getCheckoutPollingState,
   getDbPollOffset,
   getReconcileOffset,
+  shouldReconcileOnActivation,
 } from '../src/pages/checkout-result/paymentPollingPolicy';
 import { mapDokuCheckoutPaymentStatus } from '../supabase/functions/_shared/dokuPaymentStatus';
 
@@ -38,6 +39,17 @@ describe('checkout payment polling policy', () => {
     expect(getReconcileOffset(1)).toBe(75_000);
     expect(getReconcileOffset(2)).toBe(105_000);
     expect(getReconcileOffset(3)).toBeNull();
+  });
+
+  it('reconciles immediately on return when a background-throttled check is due', () => {
+    expect(shouldReconcileOnActivation(59_999, 0, false)).toBe(false);
+    expect(shouldReconcileOnActivation(60_000, 0, false)).toBe(true);
+    expect(shouldReconcileOnActivation(90_000, 1, false)).toBe(true);
+    expect(shouldReconcileOnActivation(120_000, 3, false)).toBe(false);
+  });
+
+  it('does not start a duplicate reconcile while one is in flight', () => {
+    expect(shouldReconcileOnActivation(90_000, 0, true)).toBe(false);
   });
 
   it.each([

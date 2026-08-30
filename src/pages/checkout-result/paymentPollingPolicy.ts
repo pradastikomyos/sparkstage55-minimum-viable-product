@@ -27,6 +27,16 @@ export function getReconcileOffset(attempt: number): number | null {
   return RECONCILE_OFFSETS_MS[attempt] ?? null;
 }
 
+export function shouldReconcileOnActivation(
+  elapsedMs: number,
+  attempt: number,
+  isInFlight: boolean,
+): boolean {
+  if (isInFlight || !Number.isFinite(elapsedMs) || elapsedMs < 0) return false;
+  const dueOffset = getReconcileOffset(attempt);
+  return dueOffset !== null && elapsedMs >= dueOffset;
+}
+
 export function getCheckoutPollingState(
   kind: string | null | undefined,
   orderStatus: string | null | undefined,

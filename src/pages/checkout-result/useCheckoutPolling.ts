@@ -6,6 +6,7 @@ import {
   getCheckoutPollingState,
   getDbPollOffset,
   getReconcileOffset,
+  shouldReconcileOnActivation,
 } from './paymentPollingPolicy';
 
 type OrderQueryResult = Pick<UseQueryResult<CheckoutResultResponse, Error>, 'data' | 'isLoading' | 'isFetching' | 'refetch'>;
@@ -19,6 +20,7 @@ export function useCheckoutPolling({ invoice, orderQuery }: { invoice: string | 
   const observationStartedAtRef = useRef(Date.now());
   const dbPollingStartedAtRef = useRef(Date.now());
   const lastFocusRefreshAtRef = useRef(0);
+  const reconcileInFlightRef = useRef(false);
   const { data, isLoading, isFetching, refetch } = orderQuery;
   const pollingState = getCheckoutPollingState(data?.kind, data?.order?.status);
   const isPending = pollingState === 'pending';
@@ -57,6 +59,7 @@ export function useCheckoutPolling({ invoice, orderQuery }: { invoice: string | 
   const reconcileMutation = useMutation({
     mutationFn: () => reconcileDokuPayment({ invoice_number: invoice ?? '' }),
     onSettled: async () => {
+      reconcileInFlightRef.current = false;
       setLastCheckedAt(new Date());
       if (!invoice) return;
       await refetch();
@@ -72,6 +75,8 @@ export function useCheckoutPolling({ invoice, orderQuery }: { invoice: string | 
     if (offset === null) return;
     const dueAt = observationStartedAtRef.current + offset;
     const timeoutId = window.setTimeout(() => {
+      if (reconcileInFlightRef.current) return;
+      reconcileInFlightRef.current = true;
       setReconcileAttemptCount((current) => current + 1);
       reconcileMutation.mutate();
     }, Math.max(0, dueAt - Date.now()));
@@ -87,6 +92,21 @@ export function useCheckoutPolling({ invoice, orderQuery }: { invoice: string | 
       const now = Date.now();
       if (now - lastFocusRefreshAtRef.current < 1_000) return;
       lastFocusRefreshAtRef.current = now;
+
+      // DOKU Checkout runs above this page. Browsers may throttle the 60-second
+      // reconciliation timer while that hosted UI has focus. When the customer
+      // returns, immediately run any provider check that is already due.
+      if (shouldReconcileOnActivation(
+        now - observationStartedAtRef.current,
+        reconcileAttemptCount,
+        reconcileInFlightRef.current,
+      )) {
+        reconcileInFlightRef.current = true;
+        setReconcileAttemptCount((current) => current + 1);
+        reconcileMutation.mutate();
+        return;
+      }
+
       void refetch().finally(() => setLastCheckedAt(new Date()));
     };
 
@@ -96,7 +116,7 @@ export function useCheckoutPolling({ invoice, orderQuery }: { invoice: string | 
       window.removeEventListener('focus', refreshWhenActive);
       document.removeEventListener('visibilitychange', refreshWhenActive);
     };
-  }, [invoice, isPending, refetch]);
+  }, [invoice, isPending, reconcileAttemptCount, reconcileMutation.mutate, refetch]);
 
   const resetPolling = useCallback(() => {
     dbPollingStartedAtRef.current = Date.now();
