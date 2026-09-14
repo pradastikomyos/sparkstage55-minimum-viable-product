@@ -115,7 +115,7 @@ export function PaymentHealthCard({
           <p className="admin-eyebrow">Payment Health</p>
           <h2>DOKU reconciliation</h2>
         </div>
-        <button type="button" onClick={onRefresh}>
+        <button type="button" className="admin-payment-refresh" onClick={onRefresh}>
           <AdminIcon icon={RefreshIcon} size={16} />
           Refresh
         </button>

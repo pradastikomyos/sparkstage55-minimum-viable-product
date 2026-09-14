@@ -37,6 +37,67 @@
   flex-shrink: 0;
 }
 
+.admin-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: #44403C;
+  font: inherit;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.admin-btn:focus-visible,
+.admin-reports-export-actions .admin-btn:focus-visible {
+  outline: 2px solid rgba(28, 25, 23, 0.35);
+  outline-offset: 2px;
+}
+
+.admin-reports-export-actions .admin-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 14px;
+  background: #fff;
+  border: 1px solid #E7E5E4;
+  border-radius: 8px;
+  color: #292524;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.admin-reports-export-actions .admin-btn:disabled {
+  cursor: not-allowed;
+}
+
+.admin-reports-export-actions .admin-btn:not(:disabled):is(:hover, :focus-visible) {
+  border-color: #A8A29E;
+  box-shadow: 0 8px 18px rgba(28, 25, 23, 0.14);
+  transform: translateY(-3px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-reports-export-actions .admin-btn {
+    transition: none;
+  }
+
+  .admin-reports-export-actions .admin-btn:not(:disabled):is(:hover, :focus-visible) {
+    transform: none;
+  }
+}
+
 .admin-filters {
   display: flex;
   flex-wrap: wrap;
@@ -46,6 +107,13 @@
 
 .admin-filters .admin-btn {
   font-size: 13px;
+  background: #fff;
+  border-color: #E7E5E4;
+}
+
+.admin-filters .admin-btn:not(.is-active):hover {
+  background: #FAFAF9;
+  border-color: #A8A29E;
 }
 
 .admin-filters .admin-btn.is-active {

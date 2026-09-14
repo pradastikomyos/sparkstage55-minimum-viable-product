@@ -138,7 +138,7 @@ export function QrScannerModal({ isOpen, onScan, onClose }: QrScannerModalProps)
               <p className="admin-muted" style={{ marginTop: 8, fontSize: 12 }}>
                 Pastikan izin kamera sudah diberikan di browser Anda.
               </p>
-              <button type="button" onClick={() => startScanner()} style={{ marginTop: 16 }}>
+              <button type="button" className="qr-modal-retry" onClick={() => startScanner()}>
                 Coba Lagi
               </button>
             </div>

@@ -105,6 +105,25 @@
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
 }
 
+.admin-pane-header > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #555;
+  cursor: pointer;
+}
+
+.admin-pane-header > button:focus-visible {
+  outline: 2px solid rgba(17, 17, 17, 0.28);
+  outline-offset: 2px;
+}
+
 .admin-detail-top {
   position: sticky;
   top: 0;
