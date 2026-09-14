@@ -38,16 +38,17 @@ export function ReportsSection({ isReady, onOpenSidebar }: ReportsSectionProps) 
   const [bucket, setBucket] = useState<'day' | 'week' | 'month'>('day');
   const [chartMetric, setChartMetric] = useState<'revenue' | 'orders' | 'items'>('revenue');
   const [isExportingPdf, setIsExportingPdf] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   const { startDate, endDate } = getPeriodRange(period, customStart, customEnd);
 
-  const { data: orders, isLoading } = useQuery({
+  const { data: orders, isLoading, isError: isOrdersError } = useQuery({
     queryKey: ['sales-report', startDate, endDate],
     queryFn: () => fetchPaidOrders(startDate, endDate),
     enabled: isReady,
   });
 
-  const { data: statusOrders, isLoading: isStatusLoading } = useQuery({
+  const { data: statusOrders, isLoading: isStatusLoading, isError: isStatusError } = useQuery({
     queryKey: ['sales-report-status-summary', startDate, endDate],
     queryFn: () => fetchOrdersForStatusSummary(startDate, endDate),
     enabled: isReady,
@@ -58,16 +59,19 @@ export function ReportsSection({ isReady, onOpenSidebar }: ReportsSectionProps) 
   const topProducts = useMemo(() => (orders ? computeTopProducts(orders) : []), [orders]);
   const statusSummary = useMemo(() => (statusOrders ? computeOrderStatusSummary(statusOrders) : []), [statusOrders]);
 
-  const isPaidOrdersPossiblyTruncated = (orders?.length ?? 0) >= 1000;
-  const isStatusOrdersPossiblyTruncated = (statusOrders?.length ?? 0) >= 1000;
-
   const handleExport = () => {
-    const rows = buildReportRows(summary, timeSeries, topProducts, startDate, endDate);
-    const filename = `spark-stage-sales-report-${startDate.slice(0, 10)}-to-${endDate.slice(0, 10)}.csv`;
-    downloadCsv(filename, rows);
+    try {
+      setExportError(null);
+      const rows = buildReportRows(summary, timeSeries, topProducts, statusSummary, startDate, endDate);
+      const filename = `spark-stage-sales-report-${startDate.slice(0, 10)}-to-${endDate.slice(0, 10)}.csv`;
+      downloadCsv(filename, rows);
+    } catch {
+      setExportError('CSV gagal dibuat. Silakan coba lagi.');
+    }
   };
 
   const handleExportPdf = () => {
+    setExportError(null);
     setIsExportingPdf(true);
 
     window.setTimeout(() => {
@@ -76,9 +80,12 @@ export function ReportsSection({ isReady, onOpenSidebar }: ReportsSectionProps) 
           summary,
           timeSeries,
           topProducts,
+          statusSummary,
           startDate,
           endDate,
         });
+      } catch {
+        setExportError('PDF gagal dibuat. Silakan coba lagi.');
       } finally {
         setIsExportingPdf(false);
       }
@@ -89,20 +96,43 @@ export function ReportsSection({ isReady, onOpenSidebar }: ReportsSectionProps) 
     <section className="admin-detail-pane">
       <AdminDetailTop view="reports" onOpenSidebar={onOpenSidebar} />
       <div className="admin-reports">
-        <ReportFilters
-          period={period}
-          onChangePeriod={setPeriod}
-          customStart={customStart}
-          customEnd={customEnd}
-          onChangeCustomStart={setCustomStart}
-          onChangeCustomEnd={setCustomEnd}
-        />
+        <div className="admin-reports-toolbar">
+          <ReportFilters
+            period={period}
+            onChangePeriod={setPeriod}
+            customStart={customStart}
+            customEnd={customEnd}
+            onChangeCustomStart={setCustomStart}
+            onChangeCustomEnd={setCustomEnd}
+          />
 
-        {(isPaidOrdersPossiblyTruncated || isStatusOrdersPossiblyTruncated) && (
-          <div className="admin-warning">
-            Data laporan mencapai batas 1000 baris. Angka laporan mungkin belum mencakup seluruh data dalam periode ini.
+          <div className="admin-reports-export-actions">
+            <button
+              className="admin-btn admin-btn--secondary"
+              type="button"
+              onClick={handleExport}
+              disabled={isLoading || isStatusLoading || isOrdersError || isStatusError || !summary}
+            >
+              <AdminIcon icon={Download02Icon} size={16} />
+              Export CSV
+            </button>
+            <button
+              className="admin-btn admin-btn--secondary"
+              type="button"
+              onClick={handleExportPdf}
+              disabled={isLoading || isStatusLoading || isOrdersError || isStatusError || !summary || isExportingPdf}
+            >
+              <AdminIcon icon={Download02Icon} size={16} />
+              {isExportingPdf ? 'Membuat PDF...' : 'Export PDF'}
+            </button>
           </div>
+        </div>
+
+        {(isOrdersError || isStatusError) && (
+          <p className="admin-error" role="alert">Data laporan gagal dimuat. Silakan muat ulang halaman.</p>
         )}
+
+        {exportError && <p className="admin-error" role="alert">{exportError}</p>}
 
         <SalesSummaryCards summary={summary} isLoading={isLoading} />
 
@@ -118,27 +148,6 @@ export function ReportsSection({ isReady, onOpenSidebar }: ReportsSectionProps) 
         />
 
         <TopProductsTable products={topProducts} isLoading={isLoading} />
-
-        <div className="admin-reports-section">
-          <button
-            className="admin-btn admin-btn--secondary"
-            type="button"
-            onClick={handleExport}
-            disabled={isLoading || !summary}
-          >
-            <AdminIcon icon={Download02Icon} size={16} />
-            Export CSV
-          </button>
-          <button
-            className="admin-btn admin-btn--secondary"
-            type="button"
-            onClick={handleExportPdf}
-            disabled={isLoading || !summary || isExportingPdf}
-          >
-            <AdminIcon icon={Download02Icon} size={16} />
-            {isExportingPdf ? 'Membuat PDF...' : 'Export PDF'}
-          </button>
-        </div>
       </div>
     </section>
   );

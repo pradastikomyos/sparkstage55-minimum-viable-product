@@ -128,61 +128,69 @@ export function formatIdr(n: number): string {
 
 // ── Data fetching ────────────────────────────────────────────────────────
 
+const REPORT_PAGE_SIZE = 1000;
+
+function getExclusiveEndDate(endDate: string): string {
+  return new Date(new Date(endDate).getTime() + 1000).toISOString();
+}
+
 export async function fetchPaidOrders(startDate: string, endDate: string): Promise<AdminOrder[]> {
   const client = requireSupabaseClient();
-  const { data, error } = await client
-    .from('orders')
-    .select(`
-      id,
-      invoice_number,
-      customer_name,
-      customer_email,
-      customer_phone,
-      status,
-      payment_status,
-      total_amount_idr,
-      paid_at,
-      picked_up_at,
-      created_at,
-      pickup_codes(code, qr_payload, verified_at),
-      order_items(product_name, sku, quantity, unit_price_idr, line_total_idr)
-    `)
-    .eq('payment_status', 'paid')
-    .gte('paid_at', startDate)
-    .lte('paid_at', endDate)
-    .order('paid_at', { ascending: false })
-    .limit(1000);
+  const orders: AdminOrder[] = [];
 
-  if (error) throw error;
-  return (data ?? []) as AdminOrder[];
+  for (let from = 0; ; from += REPORT_PAGE_SIZE) {
+    const { data, error } = await client
+      .from('orders')
+      .select(`
+        id,
+        status,
+        payment_status,
+        total_amount_idr,
+        paid_at,
+        created_at,
+        order_items(product_name, sku, quantity, unit_price_idr, line_total_idr)
+      `)
+      .eq('payment_status', 'paid')
+      .gte('paid_at', startDate)
+      .lt('paid_at', getExclusiveEndDate(endDate))
+      .order('paid_at', { ascending: false })
+      .order('id', { ascending: false })
+      .range(from, from + REPORT_PAGE_SIZE - 1);
+
+    if (error) throw error;
+    const page = (data ?? []) as AdminOrder[];
+    orders.push(...page);
+    if (page.length < REPORT_PAGE_SIZE) return orders;
+  }
 }
 
 export async function fetchOrdersForStatusSummary(startDate: string, endDate: string): Promise<AdminOrder[]> {
   const client = requireSupabaseClient();
-  const { data, error } = await client
-    .from('orders')
-    .select(`
-      id,
-      invoice_number,
-      customer_name,
-      customer_email,
-      customer_phone,
-      status,
-      payment_status,
-      total_amount_idr,
-      paid_at,
-      picked_up_at,
-      created_at,
-      pickup_codes(code, qr_payload, verified_at),
-      order_items(product_name, sku, quantity, unit_price_idr, line_total_idr)
-    `)
-    .gte('created_at', startDate)
-    .lte('created_at', endDate)
-    .order('created_at', { ascending: false })
-    .limit(1000);
+  const orders: AdminOrder[] = [];
 
-  if (error) throw error;
-  return (data ?? []) as AdminOrder[];
+  for (let from = 0; ; from += REPORT_PAGE_SIZE) {
+    const { data, error } = await client
+      .from('orders')
+      .select(`
+        id,
+        status,
+        payment_status,
+        total_amount_idr,
+        paid_at,
+        created_at,
+        order_items(product_name, sku, quantity, unit_price_idr, line_total_idr)
+      `)
+      .gte('created_at', startDate)
+      .lt('created_at', getExclusiveEndDate(endDate))
+      .order('created_at', { ascending: false })
+      .order('id', { ascending: false })
+      .range(from, from + REPORT_PAGE_SIZE - 1);
+
+    if (error) throw error;
+    const page = (data ?? []) as AdminOrder[];
+    orders.push(...page);
+    if (page.length < REPORT_PAGE_SIZE) return orders;
+  }
 }
 
 // ── Aggregation: summary ─────────────────────────────────────────────────

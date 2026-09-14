@@ -1,7 +1,7 @@
 import { jsPDF } from 'jspdf';
 import { autoTable } from 'jspdf-autotable';
 import { formatIdr } from '../services/reports';
-import type { SalesSummary, SalesTimeSeriesPoint, TopProductRow } from '../services/reports';
+import type { OrderStatusCount, SalesSummary, SalesTimeSeriesPoint, TopProductRow } from '../services/reports';
 
 type AutoTableDocument = jsPDF & {
   lastAutoTable?: {
@@ -14,27 +14,35 @@ function getLastAutoTableFinalY(pdf: AutoTableDocument, fallback: number): numbe
 }
 
 function escapeCsvField(field: string): string {
-  if (field.includes(',') || field.includes('"') || field.includes('\n')) {
-    return `"${field.replace(/"/g, '""')}"`;
+  const safeField = /^[=+\-@]/.test(field) ? `'${field}` : field;
+  if (safeField.includes(',') || safeField.includes('"') || safeField.includes('\n') || safeField.includes('\r')) {
+    return `"${safeField.replace(/"/g, '""')}"`;
   }
-  return field;
+  return safeField;
+}
+
+export function serializeCsv(rows: string[][]): string {
+  return '\uFEFF' + rows.map((row) => row.map(escapeCsvField).join(',')).join('\r\n');
 }
 
 export function downloadCsv(filename: string, rows: string[][]): void {
-  const csv = rows.map((row) => row.map(escapeCsvField).join(',')).join('\n');
-  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const blob = new Blob([serializeCsv(rows)], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
   a.download = filename;
+  a.hidden = true;
+  document.body.appendChild(a);
   a.click();
-  URL.revokeObjectURL(url);
+  a.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
 export function buildReportRows(
   summary: SalesSummary | null,
   timeSeries: SalesTimeSeriesPoint[],
   topProducts: TopProductRow[],
+  statusSummary: OrderStatusCount[],
   startDate: string,
   endDate: string,
 ): string[][] {
@@ -49,6 +57,13 @@ export function buildReportRows(
   rows.push(['Order Dibayar', String(summary?.paidOrders ?? 0)]);
   rows.push(['Item Terjual', String(summary?.itemsSold ?? 0)]);
   rows.push(['Rata-rata Order', formatIdr(summary?.averageOrderValue ?? 0)]);
+  rows.push([]);
+
+  rows.push(['STATUS ORDER']);
+  rows.push(['Status', 'Jumlah Order', 'Nilai Order']);
+  statusSummary.forEach((status) => {
+    rows.push([status.label, String(status.count), formatIdr(status.revenue)]);
+  });
   rows.push([]);
 
   rows.push(['SERI WAKTU']);
@@ -71,12 +86,13 @@ export interface ExportPdfInput {
   summary: SalesSummary | null;
   timeSeries: SalesTimeSeriesPoint[];
   topProducts: TopProductRow[];
+  statusSummary: OrderStatusCount[];
   startDate: string;
   endDate: string;
 }
 
-export function exportReportToPdf(input: ExportPdfInput): void {
-  const { summary, timeSeries, topProducts, startDate, endDate } = input;
+export function buildReportPdf(input: ExportPdfInput): jsPDF {
+  const { summary, timeSeries, topProducts, statusSummary, startDate, endDate } = input;
 
   const pdf = new jsPDF({
     orientation: 'portrait',
@@ -139,6 +155,25 @@ export function exportReportToPdf(input: ExportPdfInput): void {
 
   pdf.setFontSize(11);
   pdf.setFont('helvetica', 'bold');
+  pdf.text('Status Order', margin, yPosition);
+  yPosition += 3;
+
+  autoTable(pdf, {
+    head: [['Status', 'Jumlah Order', 'Nilai Order']],
+    body: statusSummary.map((status) => [status.label, String(status.count), formatIdr(status.revenue)]),
+    startY: yPosition,
+    margin: { left: margin, right: margin },
+    theme: 'grid',
+    styles: { font: 'helvetica', fontSize: 9, cellPadding: 2 },
+    headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: 'bold' },
+    columnStyles: { 0: { halign: 'left' }, 1: { halign: 'right' }, 2: { halign: 'right' } },
+  });
+
+  const pdfWithAutoTable = pdf as AutoTableDocument;
+  yPosition = getLastAutoTableFinalY(pdfWithAutoTable, yPosition) + 5;
+
+  pdf.setFontSize(11);
+  pdf.setFont('helvetica', 'bold');
   pdf.text('Seri Waktu', margin, yPosition);
   yPosition += 3;
 
@@ -148,8 +183,6 @@ export function exportReportToPdf(input: ExportPdfInput): void {
     String(p.orders),
     String(p.itemsSold),
   ]);
-
-  const pdfWithAutoTable = pdf as AutoTableDocument;
 
   autoTable(pdf, {
     head: [['Periode', 'Omzet', 'Pesanan', 'Item']],
@@ -220,6 +253,11 @@ export function exportReportToPdf(input: ExportPdfInput): void {
     },
   });
 
-  const filename = `spark-stage-sales-report-${startDateFormatted}-to-${endDateFormatted}.pdf`;
+  return pdf;
+}
+
+export function exportReportToPdf(input: ExportPdfInput): void {
+  const pdf = buildReportPdf(input);
+  const filename = `spark-stage-sales-report-${input.startDate.slice(0, 10)}-to-${input.endDate.slice(0, 10)}.pdf`;
   pdf.save(filename);
 }
