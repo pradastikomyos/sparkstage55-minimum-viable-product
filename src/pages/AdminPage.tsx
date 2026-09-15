@@ -21,6 +21,7 @@ import { Session } from '@supabase/supabase-js';
 import { AdminRail, AdminMobileNav, CommandPalette } from '../components/admin';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import { getCurrentUserRole } from '../services/auth';
+import { useUIStore } from '../store/uiStore';
 import { ADMIN_VIEWS, PIMPINAN_VIEWS, type AdminView } from './admin/types';
 
 const OWNER_VIEWS = ['dashboard', 'orders', 'payments', 'reports'] as const satisfies readonly AdminView[];
@@ -168,14 +169,14 @@ export function AdminPage({ mode = 'admin' }: AdminPageProps) {
     }
   }, [isCheckingAuth, mode, role, session]);
 
-  // Command palette
-  const [commandOpen, setCommandOpen] = useState(false);
+  const commandOpen = useUIStore((state) => state.adminCommandOpen);
+  const setCommandOpen = useUIStore((state) => state.setAdminCommandOpen);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
         event.preventDefault();
-        setCommandOpen((prev) => !prev);
+        useUIStore.getState().toggleAdminCommand();
       }
 
       if (event.key === 'Escape') {
@@ -183,7 +184,10 @@ export function AdminPage({ mode = 'admin' }: AdminPageProps) {
       }
     };
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      useUIStore.getState().setAdminCommandOpen(false);
+    };
   }, []);
 
   // ── Early returns ─────────────────────────────────────────────────────────

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Search01Icon } from '@hugeicons/core-free-icons';
 import { AdminIcon } from './AdminIcon';
 import { AdminBreadcrumb } from './AdminBreadcrumb';
+import { useUIStore } from '../../store/uiStore';
 import type { AdminView } from '../../pages/admin/types';
 
 const timeFmt = new Intl.DateTimeFormat('id-ID', {
@@ -17,6 +18,7 @@ type AdminDetailTopProps = {
 
 export function AdminDetailTop({ view, onOpenSidebar }: AdminDetailTopProps) {
   const [lastRefreshed] = useState(() => timeFmt.format(new Date()));
+  const setAdminCommandOpen = useUIStore((state) => state.setAdminCommandOpen);
 
   return (
     <header className="admin-detail-top">
@@ -34,10 +36,18 @@ export function AdminDetailTop({ view, onOpenSidebar }: AdminDetailTopProps) {
       )}
       {view && <AdminBreadcrumb currentView={view} />}
       <span className="admin-detail-top-timestamp">Diperbarui: {lastRefreshed}</span>
-      <label className="admin-global-search">
+      <button
+        className="admin-global-search"
+        type="button"
+        aria-label="Buka pencarian navigasi admin"
+        aria-haspopup="dialog"
+        aria-keyshortcuts="Control+K Meta+K"
+        onClick={() => setAdminCommandOpen(true)}
+      >
         <AdminIcon icon={Search01Icon} size={19} />
-        <input placeholder="Tekan Ctrl+K untuk navigasi" disabled />
-      </label>
+        <span>Cari menu admin</span>
+        <kbd>Ctrl K</kbd>
+      </button>
     </header>
   );
 }

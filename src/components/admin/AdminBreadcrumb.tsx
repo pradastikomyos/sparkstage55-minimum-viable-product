@@ -10,7 +10,6 @@ const VIEW_LABELS: Record<AdminView, string> = {
   cms: 'CMS Assets',
   banners: 'Banners',
   categories: 'Kategori',
-  doku: 'DOKU',
 };
 
 type AdminBreadcrumbProps = {

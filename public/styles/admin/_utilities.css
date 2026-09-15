@@ -187,12 +187,8 @@
 
 /* admin-order-skeleton — defined in _orders.css */
 
-.admin-side-search svg,
 .admin-global-search svg,
 .admin-rail-button svg,
-.admin-nav button svg,
-.admin-support-link svg,
-.admin-compose svg,
 .admin-feed-thumb svg,
 .admin-attachment-row svg {
   stroke-width: 1px;
@@ -260,7 +256,6 @@
 
 /* Gold CTA Accent */
 .admin-app .admin-form button[type='submit'],
-.admin-compose,
 .admin-empty-action {
   background: #CA8A04 !important;
   color: #fff !important;
@@ -268,14 +263,12 @@
 }
 
 .admin-app .admin-form button[type='submit']:hover,
-.admin-compose:hover,
 .admin-empty-action:hover {
   background: #A16207 !important;
 }
 
 /* Better Contrast for Muted Text */
 .admin-muted,
-.admin-user-card span,
 .admin-metric span,
 .admin-feed-main em,
 .admin-order-strip span {

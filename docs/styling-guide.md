@@ -13,7 +13,7 @@ Proyek ini menggunakan **hybrid approach** yang disengaja:
 | Layer | Tool | Dipakai untuk |
 |---|---|---|
 | Visual pages | Custom CSS (class-based) | Homepage, shop, listing, PDP, login, cart |
-| Admin / UI components | Tailwind v4 utility classes | AdminButton, AdminCard, AdminMetric, AdminInput, AdminSidebarItem |
+| Admin / UI components | Tailwind v4 utilities + scoped admin CSS | Active dashboard, form, table, modal, and navigation components |
 | Inline styles | Hanya untuk nilai dinamis | Warna dari data, dimensi dari props |
 
 Hybrid ini dipertahankan karena:
@@ -157,7 +157,7 @@ import '../styles/login.css'; // ❌
 
 // Inline style untuk nilai statis
 <div style={{ display: 'flex', alignItems: 'center' }}>...</div>
-// Harusnya: <div className="admin-user-card">...</div>
+// Harusnya: <div className="flex items-center">...</div>
 
 // Tambah file CSS global baru tanpa alasan
 // src/styles/new-feature.css  ← tanya dulu apakah perlu
