@@ -10,6 +10,7 @@ import { BrandLogo } from '../components/ui/BrandLogo';
 import { HeroMediaSkeleton, AdminTableSkeleton } from '../components/ui/Skeletons';
 import { UserHeaderActions } from '../components/ui/UserHeaderActions';
 import { CartHeaderButton } from '../components/ui/CartHeaderButton';
+import { FlipText } from '../components/ui/flip-text';
 import { buildHomeSections } from '../data/heroSections';
 import { useSiteAssets } from '../hooks/useSiteAssets';
 import type { HeroSection } from '../types/catalog';
@@ -102,7 +103,7 @@ function HomeHeroSection({ section, skeletonMode }: { section: HeroSection; skel
       )}
       {!skeletonMode ? (
         <div className="hero-content" ref={contentRef}>
-          <h2>{section.title}</h2>
+          <h2>{isFirstSection ? <FlipText>{section.title}</FlipText> : section.title}</h2>
           <div className="cta-group">
             {section.links.map((link) => (
               <Link to={link.href} className="cta-link" key={link.text}>{link.text}</Link>
@@ -117,21 +118,18 @@ function HomeHeroSection({ section, skeletonMode }: { section: HeroSection; skel
 export function HomePage() {
   const { 
     menuOpen, 
-    searchOpen, 
     scrolled, 
     setMenuOpen,
     setSearchOpen,
   } = useUIStore();
   const { skeletonMode } = useUIState();
-  const { assetMap, isReady } = useSiteAssets();
+  const { assetMap } = useSiteAssets();
   // Always build sections immediately using fallback URLs.
   // When CMS assets resolve, the map updates and sections re-render with the real URLs.
   // This prevents the page height from collapsing to 0 on first render (which causes
   // scroll position to land mid-page once content loads).
   const homeSections = buildHomeSections(assetMap);
   
-  const menuButtonRef = useRef<HTMLButtonElement>(null);
-
   useEffect(() => {
     const onScroll = () => {
       const isScrolled = window.scrollY > 120;
@@ -144,11 +142,6 @@ export function HomePage() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const closeMenu = () => {
-    setMenuOpen(false);
-    window.requestAnimationFrame(() => menuButtonRef.current?.focus());
-  };
-
   // Force scroll to top on mount — guards against browser scroll restoration
   // firing before page content has rendered (which would land mid-page once
   // the 5 hero sections expand the DOM height from ~0 to ~500vh).
@@ -160,7 +153,7 @@ export function HomePage() {
     <div className="home-page-wrapper" style={{ '--page-bg': 'var(--color-black)' } as React.CSSProperties}>
       <header className={`header${scrolled ? ' scrolled' : ''}`}>
         <div className="header-left">
-          <button className="menu-btn" id="menu-toggle" aria-controls="mega-menu" aria-expanded={menuOpen} onClick={() => setMenuOpen(true)} type="button" ref={menuButtonRef}>
+          <button className="menu-btn" id="menu-toggle" aria-controls="mega-menu" aria-expanded={menuOpen} onClick={() => setMenuOpen(true)} type="button">
             <MenuIcon />
             <span className="header-btn-label">Menu</span>
           </button>

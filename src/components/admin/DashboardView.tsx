@@ -9,6 +9,7 @@ import {
 } from '@hugeicons/core-free-icons';
 import { AdminIcon } from './AdminIcon';
 import { NumberTicker } from '../ui/number-ticker';
+import { FlipText } from '../ui/flip-text';
 import { MetricSkeleton } from './AdminSkeleton';
 
 import type { AdminView } from '../../pages/admin/types';
@@ -35,7 +36,7 @@ export function DashboardView({
       <div className="admin-dashboard-header">
         <div>
           <p className="admin-eyebrow">Overview</p>
-          <h2>Dashboard</h2>
+          <h2><FlipText>Dashboard</FlipText></h2>
         </div>
       </div>
 

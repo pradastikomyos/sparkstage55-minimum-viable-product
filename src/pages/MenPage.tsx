@@ -4,6 +4,7 @@ import { useQueries } from '@tanstack/react-query';
 import { ShopHeader } from '../components/layout/ShopHeader';
 import { WomenCategorySectionSkeleton } from '../components/ui/Skeletons';
 import { CatalogState } from '../components/ui/CatalogState';
+import { FlipText } from '../components/ui/flip-text';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { listProductsByCategory } from '../services/commerce';
 import type { PublicProduct } from '../types/commerce';
@@ -76,7 +77,7 @@ export function MenPage() {
       <ShopHeader />
       <main className="shop-main">
         <section className="shop-hero">
-          <h1>MEN</h1>
+          <h1><FlipText>MEN</FlipText></h1>
           <p>Ready-to-wear collection</p>
         </section>
         {showSkeleton ? (
