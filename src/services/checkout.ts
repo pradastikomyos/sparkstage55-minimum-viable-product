@@ -3,7 +3,7 @@ import { FunctionsHttpError } from '@supabase/supabase-js';
 import { PaymentStatus } from '../types/commerce';
 import type { CheckoutResultOrder } from './orders';
 
-export type CheckoutResultKind = 'found' | 'pending' | 'paid' | 'not_owner' | 'not_found';
+type CheckoutResultKind = 'found' | 'pending' | 'paid' | 'not_owner' | 'not_found';
 
 export type CheckoutResultResponse = {
   kind: CheckoutResultKind;
@@ -23,8 +23,6 @@ export type DokuReconcileResponse = {
   message?: string;
   raw?: unknown;
 };
-
-export type { CheckoutResultOrder } from './orders';
 
 function getErrorMessage(payload: unknown): string | null {
   if (!payload || typeof payload !== 'object') return null;

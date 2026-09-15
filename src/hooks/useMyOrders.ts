@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { requireSupabaseClient } from '../lib/supabase';
 
-export type MyOrderItem = {
+type MyOrderItem = {
   id: string;
   product_id: string | null;
   product_name: string;
@@ -10,7 +10,7 @@ export type MyOrderItem = {
   line_total_idr: number;
 };
 
-export type MyOrderPickupCode = {
+type MyOrderPickupCode = {
   code: string;
   qr_payload: string;
 };

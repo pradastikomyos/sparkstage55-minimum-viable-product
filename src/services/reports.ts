@@ -3,12 +3,6 @@ import type { AdminOrder } from '../types/commerce';
 
 // ── Types ────────────────────────────────────────────────────────────────
 
-export type SalesReportRange = {
-  startDate: string;
-  endDate: string;
-  bucket: 'day' | 'week' | 'month';
-};
-
 export type SalesSummary = {
   revenue: number;
   paidOrders: number;

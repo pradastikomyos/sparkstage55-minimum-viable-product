@@ -1,4 +1,4 @@
-export function SkeletonBlock({ className }: { className?: string }) {
+function SkeletonBlock({ className }: { className?: string }) {
   return <span className={className ? `skeleton-block ${className}` : 'skeleton-block'} aria-hidden="true" />;
 }
 
@@ -17,7 +17,7 @@ export function HeroMediaSkeleton() {
   );
 }
 
-export function ProductGridSkeleton({ count = 9 }: { count?: number }) {
+function ProductGridSkeleton({ count = 9 }: { count?: number }) {
   return (
     <section className="prada-product-grid skeleton-grid" aria-hidden="true">
       {Array.from({ length: count }).map((_, index) => (

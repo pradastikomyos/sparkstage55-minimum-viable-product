@@ -38,7 +38,7 @@ export async function createBanner(input: BannerInput): Promise<Banner> {
   return data as Banner;
 }
 
-export async function updateBanner(id: string, input: Partial<BannerInput>): Promise<void> {
+async function updateBanner(id: string, input: Partial<BannerInput>): Promise<void> {
   const client = requireSupabaseClient();
   const { error } = await client
     .from('banners')

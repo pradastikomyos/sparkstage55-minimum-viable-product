@@ -16,10 +16,3 @@ export type HeroSection = {
     href: string;
   }>;
 };
-
-export type ProductTuple = readonly [name: string, price: string, image: string];
-
-export type ProductGroup = {
-  title: string;
-  products: ProductTuple[];
-};

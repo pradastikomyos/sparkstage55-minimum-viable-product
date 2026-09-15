@@ -36,7 +36,7 @@ function QRCanvas({ payload, size = 200 }: { payload: string; size?: number }) {
 export function MyOrderDetailPage() {
   const { invoice } = useParams<{ invoice: string }>();
   const navigate = useNavigate();
-  const { role, displayName, email } = useAuthUser();
+  const { displayName, email } = useAuthUser();
   const { itemCount } = useCartSummary();
   const { setMenuOpen, setSearchOpen, setCartDrawerOpen } = useUIStore();
   const queryClient = useQueryClient();
@@ -244,7 +244,7 @@ export function MyOrderDetailPage() {
               <section className={styles.card}>
                 <h2 className={styles.cardTitle}>Item Pesanan</h2>
                 <div className={styles.items}>
-                  {order.order_items.map((item, i) => {
+                  {order.order_items.map((item) => {
                     const existingReview = existingReviews[item.id];
                     const showForm = activeReviewItem === item.id;
                     return (

@@ -150,8 +150,3 @@ export type ProductReviewSummary = {
   avg_rating: number;
   review_count: number;
 };
-
-export type ReviewFormInput = {
-  rating: number;
-  body: string;
-};

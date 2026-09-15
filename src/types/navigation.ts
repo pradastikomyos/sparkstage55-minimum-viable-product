@@ -1,4 +1,4 @@
-export type MenuLink = {
+type MenuLink = {
   text: string;
   href?: string;
   placeholder?: boolean;

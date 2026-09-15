@@ -107,27 +107,3 @@ export async function verifyPickupCode(code: string) {
   if (data?.error) throw new Error(data.error);
   return data?.result ?? null;
 }
-
-export async function getOrderByInvoice(invoiceNumber: string) {
-  const client = requireSupabaseClient();
-  const { data, error } = await client
-    .from('orders')
-    .select(`
-      id,
-      invoice_number,
-      customer_name,
-      customer_email,
-      status,
-      payment_status,
-      total_amount_idr,
-      paid_at,
-      created_at,
-      pickup_codes(code, qr_payload, verified_at),
-      order_items(id, product_id, product_name, sku, quantity, unit_price_idr, line_total_idr)
-    `)
-    .eq('invoice_number', invoiceNumber)
-    .maybeSingle();
-
-  if (error) throw error;
-  return data as CheckoutResultOrder | null;
-}

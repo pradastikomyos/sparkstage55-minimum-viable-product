@@ -91,7 +91,6 @@ export function ProductPage() {
   }, [productQuery.data]);
 
   const hasVariants = variants.length > 1;
-  const selectedVariant = variants.find((v) => v.id === selectedVariantId) ?? null;
 
   const galleryImages = useMemo(() => {
     return [...((productQuery.data as PublicProductWithVariants | null)?.product_images ?? [])]

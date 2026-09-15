@@ -13,10 +13,10 @@
 
 import type { AdminOrder } from '../../types/commerce';
 
-export type OrderCategory = 'pending_payment' | 'pending_pickup' | 'completed' | 'cancelled';
+type OrderCategory = 'pending_payment' | 'pending_pickup' | 'completed' | 'cancelled';
 export type OrderTabKey = OrderCategory | 'all';
 
-export function classifyOrder(order: { status: string }): OrderCategory {
+function classifyOrder(order: { status: string }): OrderCategory {
   switch (order.status) {
     case 'pending_payment':
       return 'pending_payment';

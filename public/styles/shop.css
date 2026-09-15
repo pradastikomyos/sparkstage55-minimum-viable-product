@@ -1220,13 +1220,3 @@ a:focus-visible {
 @keyframes checkout-spin {
   to { transform: rotate(360deg); }
 }
-
-@keyframes fadeInMsg {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes dotPulse {
-  0%, 60%, 100% { opacity: 0; }
-  30% { opacity: 1; }
-}
