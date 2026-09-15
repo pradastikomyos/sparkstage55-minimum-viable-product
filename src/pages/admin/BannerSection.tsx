@@ -6,6 +6,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AdminDetailTop } from '../../components/admin';
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import {
   createBanner,
   deleteBanner,
@@ -42,6 +43,7 @@ export function BannerSection({ isReady, onOpenSidebar }: BannerSectionProps) {
   const queryClient = useQueryClient();
   const [form, setForm] = useState({ ...EMPTY_FORM });
   const [formError, setFormError] = useState('');
+  const [bannerToDelete, setBannerToDelete] = useState<Banner | null>(null);
 
   const bannersQuery = useQuery({
     queryKey: ['admin-banners'],
@@ -69,7 +71,10 @@ export function BannerSection({ isReady, onOpenSidebar }: BannerSectionProps) {
 
   const deleteMutation = useMutation({
     mutationFn: deleteBanner,
-    onSuccess: invalidate,
+    onSuccess: async () => {
+      await invalidate();
+      setBannerToDelete(null);
+    },
   });
 
   // Group banners by page
@@ -221,9 +226,8 @@ export function BannerSection({ isReady, onOpenSidebar }: BannerSectionProps) {
                       className="product-edit-modal__button product-edit-modal__button--danger"
                       disabled={deleteMutation.isPending}
                       onClick={() => {
-                        if (window.confirm(`Hapus banner "${banner.label}"?`)) {
-                          deleteMutation.mutate(banner.id);
-                        }
+                        deleteMutation.reset();
+                        setBannerToDelete(banner);
                       }}
                     >
                       Hapus
@@ -235,6 +239,21 @@ export function BannerSection({ isReady, onOpenSidebar }: BannerSectionProps) {
           </div>
         );
       })}
+
+      <ConfirmDialog
+        isOpen={bannerToDelete !== null}
+        title="Hapus banner?"
+        description={`Banner "${bannerToDelete?.label ?? ''}" akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.`}
+        isPending={deleteMutation.isPending}
+        errorMessage={deleteMutation.error instanceof Error ? deleteMutation.error.message : undefined}
+        onCancel={() => {
+          deleteMutation.reset();
+          setBannerToDelete(null);
+        }}
+        onConfirm={() => {
+          if (bannerToDelete) deleteMutation.mutate(bannerToDelete.id);
+        }}
+      />
     </section>
   );
 }

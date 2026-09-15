@@ -6,6 +6,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AdminDetailTop } from '../../components/admin';
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import {
   createProductCategory,
   deleteProductCategory,
@@ -26,6 +27,7 @@ export function CategorySection({ isReady, onOpenSidebar }: CategorySectionProps
   const [createError, setCreateError] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
+  const [categoryToDelete, setCategoryToDelete] = useState<ProductCategory | null>(null);
 
   const categoriesQuery = useQuery({
     queryKey: ['admin-categories'],
@@ -62,7 +64,10 @@ export function CategorySection({ isReady, onOpenSidebar }: CategorySectionProps
 
   const deleteMutation = useMutation({
     mutationFn: deleteProductCategory,
-    onSuccess: invalidate,
+    onSuccess: async () => {
+      await invalidate();
+      setCategoryToDelete(null);
+    },
   });
 
   const handleCreate = (e: React.FormEvent) => {
@@ -189,9 +194,8 @@ export function CategorySection({ isReady, onOpenSidebar }: CategorySectionProps
                         className="product-edit-modal__button product-edit-modal__button--danger"
                         disabled={deleteMutation.isPending}
                         onClick={() => {
-                          if (window.confirm(`Hapus kategori "${cat.name}"?`)) {
-                            deleteMutation.mutate(cat.id);
-                          }
+                          deleteMutation.reset();
+                          setCategoryToDelete(cat);
                         }}
                       >
                         Hapus
@@ -204,6 +208,21 @@ export function CategorySection({ isReady, onOpenSidebar }: CategorySectionProps
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={categoryToDelete !== null}
+        title="Hapus kategori?"
+        description={`Kategori "${categoryToDelete?.name ?? ''}" akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.`}
+        isPending={deleteMutation.isPending}
+        errorMessage={deleteMutation.error instanceof Error ? deleteMutation.error.message : undefined}
+        onCancel={() => {
+          deleteMutation.reset();
+          setCategoryToDelete(null);
+        }}
+        onConfirm={() => {
+          if (categoryToDelete) deleteMutation.mutate(categoryToDelete.id);
+        }}
+      />
     </section>
   );
 }
